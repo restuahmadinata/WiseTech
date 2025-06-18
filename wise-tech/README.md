@@ -2,7 +2,15 @@
 
 ## Deskripsi Proyek
 
-WiseTech adalah platform ulasan gadget modern yang memungkinkan pengguna untuk menjelajahi, mencari, dan memberikan ulasan tentang berbagai gadget seperti smartphone, laptop, dan tablet. Aplikasi ini menyediakan antarmuka pengguna yang menarik dan intuitif dengan desain modern dan berwarna.
+WiseTech adalah platform ulasan gadget modern yang memungkinkan pengguna untuk menjelajahi, mencari, dan memberikan ulasan tentang berbagai gadget seperti smartphone, laptop, dan tablet. Aplikasi ini menyediakan antarmuka pengguna yang menarik dan intuitif dengan desain modern dan berwarna menggunakan Daisy UI dan Tailwind CSS.
+
+## Teknologi yang Digunakan
+
+- **React**: Library JavaScript untuk membangun antarmuka pengguna
+- **React Router**: Untuk pengelolaan rute dan navigasi
+- **Tailwind CSS**: Framework CSS utility-first untuk styling
+- **Daisy UI**: Komponen UI berbasis Tailwind CSS untuk tampilan yang konsisten dan menarik
+- **Gradient & Animation**: Efek visual untuk meningkatkan pengalaman pengguna
 
 ## Struktur Proyek Frontend
 
@@ -181,13 +189,6 @@ Berikut adalah daftar API yang perlu diimplementasikan:
 ```
 npm run build
 ```
-
-## Teknologi yang Digunakan
-
-- React.js - Framework frontend
-- React Router - Routing
-- Tailwind CSS - Styling
-- Mock data saat ini - Akan digantikan dengan API backend
 
 ## Tim Pengembang
 

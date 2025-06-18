@@ -189,18 +189,6 @@ function App() {
             </ProtectedRoute>
           } />
           
-          <Route path="/search" element={
-            <ProtectedRoute>
-              <>
-                <Header />
-                <main className="flex-grow">
-                  <Search />
-                </main>
-                <Footer />
-              </>
-            </ProtectedRoute>
-          } />
-          
           {/* 
             Halaman Pencarian - untuk mencari gadget di semua kategori
             Tim backend: Implementasikan endpoint GET /api/search?q=[query]&category=[category]

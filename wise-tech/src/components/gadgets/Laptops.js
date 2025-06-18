@@ -23,6 +23,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { getProductPlaceholder } from '../../utils/placeholderImage';
 
 const Laptops = () => {
   const [laptops, setLaptops] = useState([]);
@@ -33,104 +34,100 @@ const Laptops = () => {
     processors: [],
     sortBy: 'newest'
   });
-  
-  useEffect(() => {
+    useEffect(() => {
     // In a real application, this would be an API call
     const fetchLaptops = async () => {
       try {
         await new Promise(resolve => setTimeout(resolve, 500));
         
         // Mock data for demonstration
-        const mockLaptops = [
-          {
-            id: 2,
+        let mockLaptops = [
+          {            id: 2,
             name: 'Samsung Galaxy Book Pro',
             brand: 'Samsung',
             price: 1299,
             rating: 4.5,
-            image: 'https://placehold.co/300x200/4F46E5/FFFFFF?text=Galaxy+Book+Pro',
+            image: '',
             releaseDate: '2023-05-14',
             description: 'Ultra-thin laptop with stunning AMOLED display and all-day battery life.',
             processor: 'Intel Core i7'
           },
-          {
-            id: 10,
+          {            id: 10,
             name: 'MacBook Pro 14"',
             brand: 'Apple',
             price: 1999,
             rating: 4.8,
-            image: 'https://placehold.co/300x200/4F46E5/FFFFFF?text=MacBook+Pro+14',
+            image: '',
             releaseDate: '2023-10-30',
             description: 'Powerful laptop with M3 Pro chip, stunning display and excellent battery life.',
             processor: 'Apple M3 Pro'
           },
-          {
-            id: 11,
+          {            id: 11,
             name: 'Dell XPS 13',
             brand: 'Dell',
             price: 1199,
             rating: 4.6,
-            image: 'https://placehold.co/300x200/4F46E5/FFFFFF?text=Dell+XPS+13',
+            image: '',
             releaseDate: '2023-08-15',
             description: 'Premium ultrabook with InfinityEdge display and excellent build quality.',
             processor: 'Intel Core i7'
           },
-          {
-            id: 12,
+          {            id: 12,
             name: 'Lenovo ThinkPad X1 Carbon',
             brand: 'Lenovo',
             price: 1499,
             rating: 4.7,
-            image: 'https://placehold.co/300x200/4F46E5/FFFFFF?text=ThinkPad+X1',
+            image: '',
             releaseDate: '2023-06-20',
             description: 'Business laptop with legendary keyboard and robust security features.',
             processor: 'Intel Core i7'
           },
-          {
-            id: 13,
+          {            id: 13,
             name: 'HP Spectre x360',
             brand: 'HP',
             price: 1399,
             rating: 4.5,
-            image: 'https://placehold.co/300x200/4F46E5/FFFFFF?text=Spectre+x360',
+            image: '',
             releaseDate: '2023-07-10',
             description: 'Convertible laptop with elegant design and vibrant OLED display.',
             processor: 'Intel Core i7'
           },
-          {
-            id: 14,
+          {            id: 14,
             name: 'Asus ROG Zephyrus G14',
             brand: 'Asus',
             price: 1699,
             rating: 4.6,
-            image: 'https://placehold.co/300x200/4F46E5/FFFFFF?text=ROG+Zephyrus',
+            image: '',
             releaseDate: '2023-04-05',
             description: 'Compact gaming laptop with powerful AMD processor and RTX graphics.',
             processor: 'AMD Ryzen 9'
           },
-          {
-            id: 15,
+          {            id: 15,
             name: 'Microsoft Surface Laptop 5',
             brand: 'Microsoft',
             price: 999,
             rating: 4.4,
-            image: 'https://placehold.co/300x200/4F46E5/FFFFFF?text=Surface+Laptop+5',
+            image: '',
             releaseDate: '2023-03-15',
             description: 'Elegant laptop with excellent display and clean Windows experience.',
             processor: 'Intel Core i5'
           },
-          {
-            id: 16,
+          {            id: 16,
             name: 'Acer Swift 5',
             brand: 'Acer',
             price: 899,
             rating: 4.3,
-            image: 'https://placehold.co/300x200/4F46E5/FFFFFF?text=Acer+Swift+5',
+            image: '',
             releaseDate: '2023-02-12',
             description: 'Ultra-lightweight laptop with antimicrobial display and fast charging.',
             processor: 'Intel Core i5'
           }
-        ];
+        ];        
+        // Generate local placeholders instead of using external service
+        mockLaptops = mockLaptops.map(laptop => ({
+          ...laptop,
+          image: getProductPlaceholder(laptop.name, laptop.id)
+        }));
         
         setLaptops(mockLaptops);
       } catch (error) {
@@ -342,9 +339,8 @@ const Laptops = () => {
           <div className="mt-6 lg:mt-0 lg:col-span-3">
             {/* Mobile filters */}
             <div className="flex items-center justify-between mb-4 lg:hidden">
-              <div>
-                <select
-                  className="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+              <div>                <select
+                  className="select select-bordered select-sm w-full"
                   value={filters.sortBy}
                   onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
                 >
@@ -353,10 +349,9 @@ const Laptops = () => {
                   <option value="price-low">Sort by: Price Low to High</option>
                   <option value="price-high">Sort by: Price High to Low</option>
                 </select>
-              </div>
-              <button
+              </div>              <button
                 type="button"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="btn btn-ghost btn-sm"
               >
                 <svg className="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd" />
@@ -370,40 +365,45 @@ const Laptops = () => {
               <p className="text-sm text-gray-500">
                 Showing {filteredAndSortedLaptops.length} laptops
               </p>
-            </div>
-
-            {/* Products */}
+            </div>            {/* Products */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredAndSortedLaptops.map((laptop) => (
                 <Link 
                   to={`/gadget/${laptop.id}`}
                   key={laptop.id} 
-                  className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full"
                 >
-                  <div className="aspect-w-4 aspect-h-3 bg-gray-200 overflow-hidden">
-                    <img 
-                      src={laptop.image} 
-                      alt={laptop.name}
-                      className="w-full h-full object-center object-cover group-hover:opacity-90 transition-opacity duration-300"
-                    />
-                  </div>
-                  <div className="p-5 flex-grow flex flex-col">
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-900 group-hover:text-indigo-600 transition-colors duration-150">
+                  <div className="card card-compact bg-base-100 shadow-xl h-full hover:shadow-2xl transition-all duration-300">
+                    <figure className="bg-base-200">
+                      <img 
+                        src={laptop.image} 
+                        alt={laptop.name}
+                        className="h-48 w-full object-cover"
+                      />
+                    </figure>
+                    <div className="card-body">
+                      <h2 className="card-title text-primary">
                         {laptop.name}
-                      </h3>
-                      <p className="mt-1 text-sm text-gray-500">{laptop.brand}</p>
-                      <p className="mt-1 text-xs text-gray-500">{laptop.processor}</p>
-                    </div>
-                    <div className="mt-2 flex items-center">
-                      <div className="flex items-center">
-                        {renderStars(Math.round(laptop.rating))}
+                        <div className="badge badge-secondary">{laptop.brand}</div>
+                      </h2>
+                      <p className="text-xs opacity-70">{laptop.processor}</p>
+                      <div className="rating rating-sm">
+                        {[1, 2, 3, 4, 5].map(star => (
+                          <input 
+                            key={star} 
+                            type="radio" 
+                            name={`rating-${laptop.id}`} 
+                            className={`mask mask-star-2 ${star <= Math.round(laptop.rating) ? 'bg-warning' : 'bg-base-300'}`} 
+                            disabled 
+                            checked={star === Math.round(laptop.rating)}
+                          />
+                        ))}
+                        <span className="ml-2 text-xs">({laptop.rating})</span>
                       </div>
-                      <p className="ml-1 text-sm text-gray-500">{laptop.rating}</p>
-                    </div>
-                    <p className="mt-2 text-sm text-gray-700 line-clamp-2">{laptop.description}</p>
-                    <div className="mt-auto pt-4">
-                      <p className="font-medium text-gray-900">${laptop.price}</p>
+                      <p className="text-sm line-clamp-2">{laptop.description}</p>
+                      <div className="card-actions justify-between items-center mt-2">
+                        <span className="text-lg font-semibold">${laptop.price}</span>
+                        <button className="btn btn-primary btn-sm">View Details</button>
+                      </div>
                     </div>
                   </div>
                 </Link>

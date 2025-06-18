@@ -22,6 +22,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { getProductPlaceholder } from '../../utils/placeholderImage';
 
 const Smartphones = () => {
   const [smartphones, setSmartphones] = useState([]);
@@ -31,32 +32,29 @@ const Smartphones = () => {
     priceRange: [0, 2000],
     sortBy: 'newest'
   });
-  
-  useEffect(() => {
+    useEffect(() => {
     // In a real application, this would be an API call
     const fetchSmartphones = async () => {
       try {
         await new Promise(resolve => setTimeout(resolve, 500));
         
         // Mock data for demonstration
-        const mockSmartphones = [
-          {
-            id: 1,
+        let mockSmartphones = [
+          {            id: 1,
             name: 'iPhone 15 Pro',
             brand: 'Apple',
             price: 999,
             rating: 4.8,
-            image: 'https://placehold.co/300x200/4F46E5/FFFFFF?text=iPhone+15+Pro',
+            image: '',
             releaseDate: '2023-09-22',
             description: 'The latest iPhone with enhanced camera capabilities and powerful A17 chip.'
           },
-          {
-            id: 4,
+          {            id: 4,
             name: 'Google Pixel 8',
             brand: 'Google',
             price: 699,
             rating: 4.6,
-            image: 'https://placehold.co/300x200/4F46E5/FFFFFF?text=Pixel+8',
+            image: '',
             releaseDate: '2023-10-12',
             description: 'Pure Android experience with outstanding camera quality and AI features.'
           },
@@ -279,9 +277,8 @@ const Smartphones = () => {
           <div className="mt-6 lg:mt-0 lg:col-span-3">
             {/* Mobile filters */}
             <div className="flex items-center justify-between mb-4 lg:hidden">
-              <div>
-                <select
-                  className="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+              <div>                <select
+                  className="select select-bordered select-sm w-full"
                   value={filters.sortBy}
                   onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
                 >
@@ -293,7 +290,7 @@ const Smartphones = () => {
               </div>
               <button
                 type="button"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="btn btn-ghost btn-sm"
               >
                 <svg className="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd" />
@@ -307,39 +304,43 @@ const Smartphones = () => {
               <p className="text-sm text-gray-500">
                 Showing {filteredAndSortedSmartphones.length} smartphones
               </p>
-            </div>
-
-            {/* Products */}
+            </div>            {/* Products */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredAndSortedSmartphones.map((phone) => (
                 <Link 
                   to={`/gadget/${phone.id}`}
-                  key={phone.id} 
-                  className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full"
+                  key={phone.id}
                 >
-                  <div className="aspect-w-4 aspect-h-3 bg-gray-200 overflow-hidden">
-                    <img 
-                      src={phone.image} 
-                      alt={phone.name}
-                      className="w-full h-full object-center object-cover group-hover:opacity-90 transition-opacity duration-300"
-                    />
-                  </div>
-                  <div className="p-5 flex-grow flex flex-col">
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-900 group-hover:text-indigo-600 transition-colors duration-150">
+                  <div className="card card-compact bg-base-100 shadow-xl h-full hover:shadow-2xl transition-all duration-300">
+                    <figure className="bg-base-200">
+                      <img 
+                        src={phone.image} 
+                        alt={phone.name}
+                        className="h-48 w-full object-cover"
+                      />
+                    </figure>
+                    <div className="card-body">
+                      <h2 className="card-title text-primary">
                         {phone.name}
-                      </h3>
-                      <p className="mt-1 text-sm text-gray-500">{phone.brand}</p>
-                    </div>
-                    <div className="mt-2 flex items-center">
-                      <div className="flex items-center">
-                        {renderStars(Math.round(phone.rating))}
+                        <div className="badge badge-secondary">{phone.brand}</div>                      </h2>
+                      <div className="rating rating-sm">
+                        {[1, 2, 3, 4, 5].map(star => (
+                          <input 
+                            key={star} 
+                            type="radio" 
+                            name={`rating-${phone.id}`} 
+                            className={`mask mask-star-2 ${star <= Math.round(phone.rating) ? 'bg-warning' : 'bg-base-300'}`} 
+                            disabled 
+                            checked={star === Math.round(phone.rating)}
+                          />
+                        ))}
+                        <span className="ml-2 text-xs">({phone.rating})</span>
                       </div>
-                      <p className="ml-1 text-sm text-gray-500">{phone.rating}</p>
-                    </div>
-                    <p className="mt-2 text-sm text-gray-700 line-clamp-2">{phone.description}</p>
-                    <div className="mt-auto pt-4">
-                      <p className="font-medium text-gray-900">${phone.price}</p>
+                      <p className="text-sm line-clamp-2">{phone.description}</p>
+                      <div className="card-actions justify-between items-center mt-2">
+                        <span className="text-lg font-semibold">${phone.price}</span>
+                        <button className="btn btn-primary btn-sm">View Details</button>
+                      </div>
                     </div>
                   </div>
                 </Link>

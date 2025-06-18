@@ -199,690 +199,530 @@ const AdminDashboard = () => {
       )
     );
   };
+
+  // Function to render rating using DaisyUI rating component
+  const renderRating = (rating) => {
+    return (
+      <div className="rating rating-sm">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <input
+            key={star}
+            type="radio"
+            name={`rating-${Math.random()}`}
+            className={`mask mask-star-2 ${star <= Math.round(rating) ? 'bg-warning' : 'bg-opacity-20'}`}
+            checked={star === Math.round(rating)}
+            readOnly
+          />
+        ))}
+      </div>
+    );
+  };
+  
   return (
     <div className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 min-h-screen">
-      <header className="bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center space-x-3">
-              <div className="bg-white p-2 rounded-lg shadow-md">
-                <svg className="h-8 w-8 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </div>
-              <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
+      <div className="navbar bg-gradient-to-r from-primary to-secondary text-primary-content shadow-lg">
+        <div className="navbar-start">
+          <div className="flex items-center space-x-3">
+            <div className="bg-base-100 p-2 rounded-lg shadow-md">
+              <svg className="h-8 w-8 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                  <svg className="h-5 w-5 text-indigo-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-                  </svg>
-                </span>
-                <input
-                  type="text"
-                  name="search"
-                  id="search"
-                  className="focus:ring-pink-500 focus:border-pink-500 block w-full pl-10 sm:text-sm border-purple-300 rounded-lg shadow-sm bg-white bg-opacity-90"
-                  placeholder="Search..."
-                />
-              </div>
-              <button className="bg-gradient-to-r from-pink-500 to-rose-500 px-4 py-2 rounded-lg text-white font-medium hover:from-pink-600 hover:to-rose-600 shadow-md transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">
-                Logout
+            <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+          </div>
+        </div>
+        <div className="navbar-center hidden lg:flex">
+          <div className="form-control">
+            <div className="input-group">
+              <input type="text" placeholder="Search..." className="input input-bordered" />
+              <button className="btn btn-square">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
               </button>
             </div>
           </div>
         </div>
-      </header>      <main className="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8">
+        <div className="navbar-end">
+          <button className="btn btn-ghost btn-circle">
+            <div className="indicator">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+              <span className="badge badge-sm badge-accent indicator-item">{stats.pendingReviews}</span>
+            </div>
+          </button>
+          <div className="dropdown dropdown-end">
+            <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
+              <div className="w-10 rounded-full">
+                <img alt="Admin avatar" src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" />
+              </div>
+            </div>
+            <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+              <li><a>Profile</a></li>
+              <li><a>Settings</a></li>
+              <li><a>Logout</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Stats cards */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {/* Total Gadgets */}
-          <div className="bg-gradient-to-br from-indigo-500 to-blue-600 overflow-hidden shadow-lg rounded-2xl transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-            <div className="px-6 py-6 sm:p-8">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-white bg-opacity-30 backdrop-filter backdrop-blur-sm rounded-xl p-4">
-                  <svg className="h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <div className="ml-6 w-0 flex-1">
-                  <dl>
-                    <dt className="text-base font-medium text-indigo-100 truncate">Total Gadgets</dt>
-                    <dd>
-                      <div className="text-3xl font-bold text-white">{stats.totalGadgets}</div>
-                    </dd>
-                  </dl>
-                </div>
+          <div className="stats shadow bg-gradient-to-br from-primary to-primary-focus text-primary-content">
+            <div className="stat">
+              <div className="stat-figure text-primary-content">
+                <svg className="h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
               </div>
-            </div>
-            <div className="w-full bg-white bg-opacity-20 h-1"></div>
-            <div className="px-6 py-3 bg-indigo-600 bg-opacity-80">
-              <div className="text-xs text-indigo-100">Last updated: Today</div>
+              <div className="stat-title">Total Gadgets</div>
+              <div className="stat-value">{stats.totalGadgets}</div>
+              <div className="stat-desc">Last updated: Today</div>
             </div>
           </div>
 
           {/* Total Users */}
-          <div className="bg-gradient-to-br from-emerald-500 to-green-600 overflow-hidden shadow-lg rounded-2xl transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-            <div className="px-6 py-6 sm:p-8">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-white bg-opacity-30 backdrop-filter backdrop-blur-sm rounded-xl p-4">
-                  <svg className="h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                </div>
-                <div className="ml-6 w-0 flex-1">
-                  <dl>
-                    <dt className="text-base font-medium text-green-100 truncate">Total Users</dt>
-                    <dd>
-                      <div className="text-3xl font-bold text-white">{stats.totalUsers}</div>
-                    </dd>
-                  </dl>
-                </div>
+          <div className="stats shadow bg-gradient-to-br from-secondary to-secondary-focus text-secondary-content">
+            <div className="stat">
+              <div className="stat-figure text-secondary-content">
+                <svg className="h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
               </div>
-            </div>
-            <div className="w-full bg-white bg-opacity-20 h-1"></div>
-            <div className="px-6 py-3 bg-green-600 bg-opacity-80">
-              <div className="text-xs text-green-100">Last updated: Today</div>
+              <div className="stat-title">Total Users</div>
+              <div className="stat-value">{stats.totalUsers}</div>
+              <div className="stat-desc">Active: {stats.activeUsers} | Suspended: {stats.suspendedUsers}</div>
             </div>
           </div>
 
           {/* Total Reviews */}
-          <div className="bg-gradient-to-br from-amber-500 to-orange-600 overflow-hidden shadow-lg rounded-2xl transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-            <div className="px-6 py-6 sm:p-8">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-white bg-opacity-30 backdrop-filter backdrop-blur-sm rounded-xl p-4">
-                  <svg className="h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                  </svg>
-                </div>
-                <div className="ml-6 w-0 flex-1">
-                  <dl>
-                    <dt className="text-base font-medium text-amber-100 truncate">Total Reviews</dt>
-                    <dd>
-                      <div className="text-3xl font-bold text-white">{stats.totalReviews}</div>
-                    </dd>
-                  </dl>
-                </div>
+          <div className="stats shadow bg-gradient-to-br from-accent to-accent-focus text-accent-content">
+            <div className="stat">
+              <div className="stat-figure text-accent-content">
+                <svg className="h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                </svg>
               </div>
-            </div>
-            <div className="w-full bg-white bg-opacity-20 h-1"></div>
-            <div className="px-6 py-3 bg-orange-600 bg-opacity-80">
-              <div className="text-xs text-amber-100">Last updated: Today</div>
-            </div>
-          </div>
-        </div>        {/* Navigation tabs */}
-        <div className="mt-8 bg-white shadow-md rounded-xl overflow-hidden">
-          <div className="sm:hidden">
-            <label htmlFor="tabs" className="sr-only">
-              Select a tab
-            </label>
-            <select
-              id="tabs"
-              name="tabs"
-              className="block w-full py-3 pl-4 pr-10 text-base border-0 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-gradient-to-r from-indigo-50 to-purple-50 sm:text-sm rounded-lg"
-              value={activeTab}
-              onChange={(e) => setActiveTab(e.target.value)}
-            >
-              <option value="overview">Overview</option>
-              <option value="gadgets">Gadgets</option>
-              <option value="users">Users</option>
-              <option value="reviews">Reviews</option>
-            </select>
-          </div>
-          <div className="hidden sm:block">
-            <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 px-2 pt-2">
-              <nav className="-mb-px flex space-x-2" aria-label="Tabs">
-                <button
-                  onClick={() => setActiveTab('overview')}
-                  className={`${
-                    activeTab === 'overview'
-                      ? 'bg-white text-purple-700 shadow-md'
-                      : 'bg-white bg-opacity-60 text-gray-600 hover:text-purple-700 hover:bg-white hover:bg-opacity-80'
-                  } w-1/4 py-3 px-1 text-center rounded-t-lg font-medium text-sm transition-all duration-200`}
-                >
-                  <span className="flex items-center justify-center">
-                    <svg className={`mr-2 h-5 w-5 ${activeTab === 'overview' ? 'text-purple-500' : 'text-gray-400'}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
-                      <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
-                    </svg>
-                    Overview
-                  </span>
-                </button>
-                <button
-                  onClick={() => setActiveTab('gadgets')}
-                  className={`${
-                    activeTab === 'gadgets'
-                      ? 'bg-white text-blue-700 shadow-md'
-                      : 'bg-white bg-opacity-60 text-gray-600 hover:text-blue-700 hover:bg-white hover:bg-opacity-80'
-                  } w-1/4 py-3 px-1 text-center rounded-t-lg font-medium text-sm transition-all duration-200`}
-                >
-                  <span className="flex items-center justify-center">
-                    <svg className={`mr-2 h-5 w-5 ${activeTab === 'gadgets' ? 'text-blue-500' : 'text-gray-400'}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clipRule="evenodd" />
-                    </svg>
-                    Gadgets
-                  </span>
-                </button>
-                <button
-                  onClick={() => setActiveTab('users')}
-                  className={`${
-                    activeTab === 'users'
-                      ? 'bg-white text-green-700 shadow-md'
-                      : 'bg-white bg-opacity-60 text-gray-600 hover:text-green-700 hover:bg-white hover:bg-opacity-80'
-                  } w-1/4 py-3 px-1 text-center rounded-t-lg font-medium text-sm transition-all duration-200`}
-                >
-                  <span className="flex items-center justify-center">
-                    <svg className={`mr-2 h-5 w-5 ${activeTab === 'users' ? 'text-green-500' : 'text-gray-400'}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-                    </svg>
-                    Users
-                  </span>
-                </button>
-                <button
-                  onClick={() => setActiveTab('reviews')}
-                  className={`${
-                    activeTab === 'reviews'
-                      ? 'bg-white text-amber-700 shadow-md'
-                      : 'bg-white bg-opacity-60 text-gray-600 hover:text-amber-700 hover:bg-white hover:bg-opacity-80'
-                  } w-1/4 py-3 px-1 text-center rounded-t-lg font-medium text-sm transition-all duration-200`}
-                >
-                  <span className="flex items-center justify-center">
-                    <svg className={`mr-2 h-5 w-5 ${activeTab === 'reviews' ? 'text-amber-500' : 'text-gray-400'}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                    Reviews
-                  </span>
-                </button>
-              </nav>
+              <div className="stat-title">Total Reviews</div>
+              <div className="stat-value">{stats.totalReviews}</div>
+              <div className="stat-desc">Pending approval: {stats.pendingReviews}</div>
             </div>
           </div>
         </div>
 
-        {/* Tab content */}
-        <div className="mt-6">
-          {/* Overview */}
-          {activeTab === 'overview' && (
-            <div>              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {/* Pending Reviews */}
-                <div className="bg-gradient-to-r from-rose-400 to-pink-500 overflow-hidden shadow-lg rounded-xl transform transition-all duration-300 hover:shadow-xl">
-                  <div className="px-5 py-5 sm:p-6">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 bg-white bg-opacity-30 backdrop-filter backdrop-blur-sm rounded-lg p-3">
-                        <svg className="h-7 w-7 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-semibold text-rose-100 truncate">Pending Reviews</dt>
-                          <dd>
-                            <div className="text-2xl font-bold text-white">{stats.pendingReviews}</div>
-                          </dd>
-                        </dl>
-                      </div>
-                    </div>
-                    <div className="mt-4 pt-3 border-t border-rose-300 border-opacity-30">
-                      <span className="inline-flex items-center text-xs font-medium text-rose-100">
-                        <svg className="mr-1.5 h-3 w-3 text-rose-100" fill="currentColor" viewBox="0 0 8 8">
-                          <circle cx="4" cy="4" r="3" />
-                        </svg>
-                        Needs attention
-                      </span>
-                    </div>
-                  </div>
-                </div>
+        {/* Tabs */}
+        <div className="my-8">
+          <div className="tabs tabs-boxed">
+            <a 
+              className={`tab ${activeTab === 'overview' ? 'tab-active' : ''}`}
+              onClick={() => setActiveTab('overview')}
+            >
+              Overview
+            </a>
+            <a 
+              className={`tab ${activeTab === 'gadgets' ? 'tab-active' : ''}`}
+              onClick={() => setActiveTab('gadgets')}
+            >
+              Gadgets
+            </a>
+            <a 
+              className={`tab ${activeTab === 'reviews' ? 'tab-active' : ''}`}
+              onClick={() => setActiveTab('reviews')}
+            >
+              Reviews
+            </a>
+            <a 
+              className={`tab ${activeTab === 'users' ? 'tab-active' : ''}`}
+              onClick={() => setActiveTab('users')}
+            >
+              Users
+            </a>
+            <a 
+              className={`tab ${activeTab === 'analytics' ? 'tab-active' : ''}`}
+              onClick={() => setActiveTab('analytics')}
+            >
+              Analytics
+            </a>
+          </div>
+        </div>
 
-                {/* Active Users */}
-                <div className="bg-gradient-to-r from-teal-400 to-cyan-500 overflow-hidden shadow-lg rounded-xl transform transition-all duration-300 hover:shadow-xl">
-                  <div className="px-5 py-5 sm:p-6">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 bg-white bg-opacity-30 backdrop-filter backdrop-blur-sm rounded-lg p-3">
-                        <svg className="h-7 w-7 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-semibold text-teal-100 truncate">Active Users</dt>
-                          <dd>
-                            <div className="text-2xl font-bold text-white">{stats.activeUsers}</div>
-                          </dd>
-                        </dl>
-                      </div>
-                    </div>
-                    <div className="mt-4 pt-3 border-t border-teal-300 border-opacity-30">
-                      <span className="inline-flex items-center text-xs font-medium text-teal-100">
-                        <svg className="mr-1.5 h-3 w-3 text-teal-100" fill="currentColor" viewBox="0 0 8 8">
-                          <circle cx="4" cy="4" r="3" />
-                        </svg>
-                        Active now
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Suspended Users */}
-                <div className="bg-gradient-to-r from-gray-600 to-gray-700 overflow-hidden shadow-lg rounded-xl transform transition-all duration-300 hover:shadow-xl">
-                  <div className="px-5 py-5 sm:p-6">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 bg-white bg-opacity-20 backdrop-filter backdrop-blur-sm rounded-lg p-3">
-                        <svg className="h-7 w-7 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-semibold text-gray-300 truncate">Suspended Users</dt>
-                          <dd>
-                            <div className="text-2xl font-bold text-white">{stats.suspendedUsers}</div>
-                          </dd>
-                        </dl>
-                      </div>
-                    </div>
-                    <div className="mt-4 pt-3 border-t border-gray-400 border-opacity-30">
-                      <span className="inline-flex items-center text-xs font-medium text-gray-300">
-                        <svg className="mr-1.5 h-3 w-3 text-gray-300" fill="currentColor" viewBox="0 0 8 8">
-                          <circle cx="4" cy="4" r="3" />
-                        </svg>
-                        Review needed
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>              <div className="mt-10">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-gray-900">Recent Activity</h3>
-                  <button className="text-sm font-medium text-purple-600 hover:text-purple-800 flex items-center">
-                    View all
-                    <svg className="ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                </div>
-                <div className="bg-white shadow-lg rounded-xl overflow-hidden">
-                  <ul className="divide-y divide-gray-200">
-                    <li className="px-6 py-5 hover:bg-indigo-50 transition-colors duration-200">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 mr-4">
-                          <div className="h-10 w-10 rounded-full bg-yellow-500 flex items-center justify-center">
-                            <svg className="h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                              <path fillRule="evenodd" d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-indigo-600 truncate">New review posted</p>
-                          <p className="text-sm text-gray-600">Michael Johnson reviewed iPad Air</p>
-                          <div className="mt-1 flex items-center">
-                            <div className="flex text-yellow-400">
-                              {[...Array(5)].map((_, i) => (
-                                <svg key={i} className="h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
-                              ))}
-                            </div>
-                            <p className="ml-2 text-xs text-gray-500">2 hours ago</p>
-                          </div>
-                        </div>
-                        <div>
-                          <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 border border-yellow-300">
-                            Pending
-                          </span>
-                        </div>
-                      </div>
-                    </li>
-                    <li className="px-6 py-5 hover:bg-indigo-50 transition-colors duration-200">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 mr-4">
-                          <div className="h-10 w-10 rounded-full bg-green-500 flex items-center justify-center">
-                            <svg className="h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                              <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
-                            </svg>
-                          </div>
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-indigo-600 truncate">New user registered</p>
-                          <p className="text-sm text-gray-600">David Brown (david.brown@example.com)</p>
-                          <p className="text-xs text-gray-500 mt-1">5 hours ago</p>
-                        </div>
-                        <div>
-                          <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 border border-green-300">
-                            New
-                          </span>
-                        </div>
-                      </div>
-                    </li>
-                    <li className="px-6 py-5 hover:bg-indigo-50 transition-colors duration-200">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 mr-4">
-                          <div className="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center">
-                            <svg className="h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                              <path fillRule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm11 1H6v8l4-2 4 2V6z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-indigo-600 truncate">Gadget added</p>
-                          <p className="text-sm text-gray-600">Dell XPS 15 added to Laptops category</p>
-                          <p className="text-xs text-gray-500 mt-1">1 day ago</p>
-                        </div>
-                        <div>
-                          <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 border border-blue-300">
-                            Draft
-                          </span>
-                        </div>
-                      </div>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Gadgets */}
+        {/* Tab Content */}
+        <div className="mt-8">
+          {/* Gadgets Tab */}
           {activeTab === 'gadgets' && (
-            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <div className="sm:flex sm:items-center">
-                  <div className="sm:flex-auto">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">All Gadgets</h3>
-                    <p className="mt-1 text-sm text-gray-500">
-                      A list of all the gadgets in your account including their name, category, rating, and status.
-                    </p>
-                  </div>
-                  <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-                    <button
-                      type="button"
-                      className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                      Add Gadget
-                    </button>
+            <div>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">Manage Gadgets</h2>
+                <button className="btn btn-primary">
+                  <svg className="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+                  </svg>
+                  Add New Gadget
+                </button>
+              </div>
+
+              <div className="card bg-base-100 shadow-xl">
+                <div className="card-body p-0">
+                  <div className="overflow-x-auto">
+                    <table className="table table-zebra w-full">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Name</th>
+                          <th>Category</th>
+                          <th>Rating</th>
+                          <th>Status</th>
+                          <th>Date Added</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {gadgets.map(gadget => (
+                          <tr key={gadget.id}>
+                            <td>{gadget.id}</td>
+                            <td>{gadget.name}</td>
+                            <td>
+                              <div className="badge badge-ghost">{gadget.category}</div>
+                            </td>
+                            <td>
+                              {renderRating(gadget.rating)}
+                              <span className="ml-1 text-sm">{gadget.rating}</span>
+                            </td>
+                            <td>
+                              <div className={`badge ${
+                                gadget.status === 'Published' 
+                                  ? 'badge-success' 
+                                  : 'badge-warning'
+                              }`}>
+                                {gadget.status}
+                              </div>
+                            </td>
+                            <td>{gadget.added}</td>
+                            <td>
+                              <div className="flex space-x-2">
+                                <button className="btn btn-xs btn-ghost btn-circle">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                                  </svg>
+                                </button>
+                                <button className="btn btn-xs btn-ghost btn-circle">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                  </svg>
+                                </button>
+                                <button className="btn btn-xs btn-ghost btn-circle text-error">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-                <div className="mt-8 flex flex-col">
-                  <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                    <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-                      <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-                        <table className="min-w-full divide-y divide-gray-300">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
-                                Name
-                              </th>
-                              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                Category
-                              </th>
-                              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                Rating
-                              </th>
-                              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                Status
-                              </th>
-                              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                Added
-                              </th>
-                              <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                                <span className="sr-only">Actions</span>
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-gray-200 bg-white">
-                            {gadgets.map((gadget) => (
-                              <tr key={gadget.id}>
-                                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                                  {gadget.name}
-                                </td>
-                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{gadget.category}</td>
-                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{gadget.rating}</td>
-                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                  <span
-                                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                      gadget.status === 'Published'
-                                        ? 'bg-green-100 text-green-800'
-                                        : 'bg-yellow-100 text-yellow-800'
-                                    }`}
-                                  >
-                                    {gadget.status}
-                                  </span>
-                                </td>
-                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{gadget.added}</td>
-                                <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                                  <div className="flex space-x-2 justify-end">
-                                    <a href="#" className="text-indigo-600 hover:text-indigo-900">
-                                      Edit
-                                    </a>
-                                    {gadget.status === 'Draft' ? (
-                                      <button
-                                        onClick={() => handleGadgetStatusChange(gadget.id, 'Published')}
-                                        className="text-green-600 hover:text-green-900"
-                                      >
-                                        Publish
-                                      </button>
-                                    ) : (
-                                      <button
-                                        onClick={() => handleGadgetStatusChange(gadget.id, 'Draft')}
-                                        className="text-yellow-600 hover:text-yellow-900"
-                                      >
-                                        Unpublish
-                                      </button>
-                                    )}
-                                    <button className="text-red-600 hover:text-red-900">Delete</button>
-                                  </div>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
+                <div className="card-footer bg-base-200 px-4 py-3 flex justify-between items-center">
+                  <div className="text-sm text-base-content/70">
+                    Showing 1 to {gadgets.length} of {gadgets.length} gadgets
+                  </div>
+                  <div className="join">
+                    <button className="join-item btn btn-sm">«</button>
+                    <button className="join-item btn btn-sm btn-active">1</button>
+                    <button className="join-item btn btn-sm">»</button>
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Users */}
+          {/* Users Tab */}
           {activeTab === 'users' && (
-            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <div className="sm:flex sm:items-center">
-                  <div className="sm:flex-auto">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">All Users</h3>
-                    <p className="mt-1 text-sm text-gray-500">
-                      A list of all the users in your account including their name, email, role, and status.
-                    </p>
-                  </div>
-                  <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-                    <button
-                      type="button"
-                      className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                      Add User
-                    </button>
+            <div>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">Manage Users</h2>
+                <button className="btn btn-primary">
+                  <svg className="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+                  </svg>
+                  Add New User
+                </button>
+              </div>
+
+              <div className="card bg-base-100 shadow-xl">
+                <div className="card-body p-0">
+                  <div className="overflow-x-auto">
+                    <table className="table table-zebra w-full">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Name</th>
+                          <th>Email</th>
+                          <th>Role</th>
+                          <th>Reviews</th>
+                          <th>Joined</th>
+                          <th>Status</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {users.map(user => (
+                          <tr key={user.id}>
+                            <td>{user.id}</td>
+                            <td>
+                              <div className="flex items-center space-x-3">
+                                <div className="avatar placeholder">
+                                  <div className="bg-neutral-focus text-neutral-content rounded-full w-8">
+                                    <span>{user.name.charAt(0)}</span>
+                                  </div>
+                                </div>
+                                <div>{user.name}</div>
+                              </div>
+                            </td>
+                            <td>{user.email}</td>
+                            <td>
+                              <div className={`badge ${
+                                user.role === 'Admin' 
+                                  ? 'badge-primary' 
+                                  : user.role === 'Moderator'
+                                  ? 'badge-secondary'
+                                  : 'badge-ghost'
+                              }`}>
+                                {user.role}
+                              </div>
+                            </td>
+                            <td>{user.reviews}</td>
+                            <td>{user.joined}</td>
+                            <td>
+                              <div className={`badge ${
+                                user.status === 'Active' 
+                                  ? 'badge-success' 
+                                  : 'badge-error'
+                              }`}>
+                                {user.status}
+                              </div>
+                            </td>
+                            <td>
+                              <div className="dropdown dropdown-end">
+                                <div tabIndex={0} role="button" className="btn btn-xs btn-ghost m-1">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                  </svg>
+                                </div>
+                                <ul tabIndex={0} className="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-32">
+                                  <li><a>Edit</a></li>
+                                  <li><a className={user.status === 'Active' ? 'text-error' : 'text-success'}>
+                                    {user.status === 'Active' ? 'Suspend' : 'Activate'}
+                                  </a></li>
+                                  <li><a className="text-error">Delete</a></li>
+                                </ul>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-                <div className="mt-8 flex flex-col">
-                  <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                    <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-                      <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-                        <table className="min-w-full divide-y divide-gray-300">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
-                                Name
-                              </th>
-                              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                Email
-                              </th>
-                              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                Role
-                              </th>
-                              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                Reviews
-                              </th>
-                              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                Joined
-                              </th>
-                              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                Status
-                              </th>
-                              <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                                <span className="sr-only">Actions</span>
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-gray-200 bg-white">
-                            {users.map((user) => (
-                              <tr key={user.id}>
-                                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                                  {user.name}
-                                </td>
-                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{user.email}</td>
-                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                  <span
-                                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                      user.role === 'Admin'
-                                        ? 'bg-purple-100 text-purple-800'
-                                        : user.role === 'Moderator'
-                                        ? 'bg-blue-100 text-blue-800'
-                                        : 'bg-gray-100 text-gray-800'
-                                    }`}
-                                  >
-                                    {user.role}
-                                  </span>
-                                </td>
-                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{user.reviews}</td>
-                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{user.joined}</td>
-                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                  <span
-                                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                      user.status === 'Active'
-                                        ? 'bg-green-100 text-green-800'
-                                        : 'bg-red-100 text-red-800'
-                                    }`}
-                                  >
-                                    {user.status}
-                                  </span>
-                                </td>
-                                <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                                  <div className="flex space-x-2 justify-end">
-                                    <a href="#" className="text-indigo-600 hover:text-indigo-900">
-                                      Edit
-                                    </a>
-                                    {user.status === 'Active' ? (
-                                      <button
-                                        onClick={() => handleUserStatusChange(user.id, 'Suspended')}
-                                        className="text-red-600 hover:text-red-900"
-                                      >
-                                        Suspend
-                                      </button>
-                                    ) : (
-                                      <button
-                                        onClick={() => handleUserStatusChange(user.id, 'Active')}
-                                        className="text-green-600 hover:text-green-900"
-                                      >
-                                        Activate
-                                      </button>
-                                    )}
-                                  </div>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
+                <div className="card-footer bg-base-200 px-4 py-3 flex justify-between items-center">
+                  <div className="text-sm text-base-content/70">
+                    Showing 1 to {users.length} of {users.length} users
+                  </div>
+                  <div className="join">
+                    <button className="join-item btn btn-sm">«</button>
+                    <button className="join-item btn btn-sm btn-active">1</button>
+                    <button className="join-item btn btn-sm">»</button>
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Reviews */}
+          {/* Reviews Tab */}
           {activeTab === 'reviews' && (
-            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <div className="sm:flex sm:items-center">
-                  <div className="sm:flex-auto">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">All Reviews</h3>
-                    <p className="mt-1 text-sm text-gray-500">
-                      A list of all the reviews submitted by users, with moderation options.
-                    </p>
+            <div>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">Manage Reviews</h2>
+                <div className="join">
+                  <button className="btn join-item btn-sm">All</button>
+                  <button className="btn join-item btn-sm">Pending</button>
+                  <button className="btn join-item btn-sm">Approved</button>
+                  <button className="btn join-item btn-sm">Rejected</button>
+                </div>
+              </div>
+
+              <div className="card bg-base-100 shadow-xl">
+                <div className="card-body p-0">
+                  <div className="overflow-x-auto">
+                    <table className="table table-zebra w-full">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>User</th>
+                          <th>Gadget</th>
+                          <th>Rating</th>
+                          <th>Date</th>
+                          <th>Status</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {reviews.map(review => (
+                          <tr key={review.id}>
+                            <td>{review.id}</td>
+                            <td>{review.user}</td>
+                            <td>{review.gadget}</td>
+                            <td>
+                              {renderRating(review.rating)}
+                            </td>
+                            <td>{review.date}</td>
+                            <td>
+                              <div className={`badge ${
+                                review.status === 'Approved' 
+                                  ? 'badge-success' 
+                                  : review.status === 'Rejected'
+                                  ? 'badge-error'
+                                  : 'badge-warning'
+                              }`}>
+                                {review.status}
+                              </div>
+                            </td>
+                            <td>
+                              <div className="flex space-x-2">
+                                <button className="btn btn-xs btn-ghost">
+                                  <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                                    <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                                  </svg>
+                                </button>
+                                <button 
+                                  className={`btn btn-xs ${review.status !== 'Approved' ? 'btn-success' : 'btn-ghost'}`}
+                                  onClick={() => handleReviewStatusChange(review.id, 'Approved')}
+                                  disabled={review.status === 'Approved'}
+                                >
+                                  <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                </button>
+                                <button 
+                                  className={`btn btn-xs ${review.status !== 'Rejected' ? 'btn-error' : 'btn-ghost'}`}
+                                  onClick={() => handleReviewStatusChange(review.id, 'Rejected')}
+                                  disabled={review.status === 'Rejected'}
+                                >
+                                  <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-                <div className="mt-8 flex flex-col">
-                  <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                    <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-                      <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-                        <table className="min-w-full divide-y divide-gray-300">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
-                                User
-                              </th>
-                              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                Gadget
-                              </th>
-                              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                Rating
-                              </th>
-                              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                Status
-                              </th>
-                              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                Date
-                              </th>
-                              <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                                <span className="sr-only">Actions</span>
-                              </th>
+                <div className="card-footer bg-base-200 px-4 py-3 flex justify-between items-center">
+                  <div className="text-sm text-base-content/70">
+                    Showing 1 to {reviews.length} of {reviews.length} reviews
+                  </div>
+                  <div className="join">
+                    <button className="join-item btn btn-sm">«</button>
+                    <button className="join-item btn btn-sm btn-active">1</button>
+                    <button className="join-item btn btn-sm">»</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Overview Tab (Default) */}
+          {(activeTab === 'overview' || activeTab === 'analytics') && (
+            <div>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">
+                  {activeTab === 'overview' ? 'Dashboard Overview' : 'Analytics Report'}
+                </h2>
+                <div className="join">
+                  <button className="btn join-item btn-sm">Today</button>
+                  <button className="btn join-item btn-sm btn-active">Week</button>
+                  <button className="btn join-item btn-sm">Month</button>
+                  <button className="btn join-item btn-sm">Year</button>
+                </div>
+              </div>
+
+              <div className="card bg-base-100 shadow-xl p-6 mb-8">
+                <h3 className="text-lg font-semibold mb-4">Activity Overview</h3>
+                <div className="h-64 w-full bg-base-200 flex items-center justify-center">
+                  <p className="text-base-content/60">Charts and graphs would be displayed here</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="card bg-base-100 shadow-xl">
+                  <div className="card-body">
+                    <h3 className="card-title">Recent Gadget Additions</h3>
+                    <div className="overflow-x-auto">
+                      <table className="table table-zebra w-full">
+                        <thead>
+                          <tr>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Date Added</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {gadgets.slice(0, 3).map((gadget) => (
+                            <tr key={gadget.id}>
+                              <td>{gadget.name}</td>
+                              <td>{gadget.category}</td>
+                              <td>{gadget.added}</td>
                             </tr>
-                          </thead>
-                          <tbody className="divide-y divide-gray-200 bg-white">
-                            {reviews.map((review) => (
-                              <tr key={review.id}>
-                                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                                  {review.user}
-                                </td>
-                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{review.gadget}</td>
-                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{review.rating}</td>
-                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                  <span
-                                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                      review.status === 'Approved'
-                                        ? 'bg-green-100 text-green-800'
-                                        : review.status === 'Pending'
-                                        ? 'bg-yellow-100 text-yellow-800'
-                                        : 'bg-red-100 text-red-800'
-                                    }`}
-                                  >
-                                    {review.status}
-                                  </span>
-                                </td>
-                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{review.date}</td>
-                                <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                                  <div className="flex space-x-2 justify-end">
-                                    <button
-                                      onClick={() => handleReviewStatusChange(review.id, 'Approved')}
-                                      className="text-green-600 hover:text-green-900"
-                                    >
-                                      Approve
-                                    </button>
-                                    <button
-                                      onClick={() => handleReviewStatusChange(review.id, 'Rejected')}
-                                      className="text-red-600 hover:text-red-900"
-                                    >
-                                      Reject
-                                    </button>
-                                    <a href="#" className="text-indigo-600 hover:text-indigo-900">
-                                      View
-                                    </a>
-                                  </div>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="card-actions justify-end mt-4">
+                      <button 
+                        className="btn btn-sm btn-primary"
+                        onClick={() => setActiveTab('gadgets')}
+                      >
+                        View All
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="card bg-base-100 shadow-xl">
+                  <div className="card-body">
+                    <h3 className="card-title">Recent Reviews</h3>
+                    <div className="overflow-x-auto">
+                      <table className="table table-zebra w-full">
+                        <thead>
+                          <tr>
+                            <th>User</th>
+                            <th>Gadget</th>
+                            <th>Rating</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {reviews.slice(0, 3).map((review) => (
+                            <tr key={review.id}>
+                              <td>{review.user}</td>
+                              <td>{review.gadget}</td>
+                              <td>{review.rating}/5</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="card-actions justify-end mt-4">
+                      <button 
+                        className="btn btn-sm btn-primary"
+                        onClick={() => setActiveTab('reviews')}
+                      >
+                        View All
+                      </button>
                     </div>
                   </div>
                 </div>
