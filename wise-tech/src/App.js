@@ -16,7 +16,7 @@
  */
 
 import './App.css';
-import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/auth/Login';               // Komponen Login
 import Register from './components/auth/Register';         // Komponen Register
 import Header from './components/layout/Header';           // Header dengan navigasi
@@ -30,6 +30,7 @@ import Smartphones from './components/gadgets/Smartphones'; // Halaman kategori 
 import Laptops from './components/gadgets/Laptops';        // Halaman kategori laptop
 import Tablets from './components/gadgets/Tablets';        // Halaman kategori tablet
 import Search from './components/gadgets/Search';          // Pencarian gadget
+import BrowseReviews from './components/reviews/BrowseReviews'; // Halaman browse semua reviews
 
 /**
  * Komponen utama aplikasi yang menentukan routing dan struktur tampilan
@@ -57,7 +58,32 @@ function App() {
    */
   const isAuthenticated = () => {
     // Memeriksa apakah pengguna sudah login dari localStorage
-    return localStorage.getItem('isAuthenticated') === 'true' || true; // Untuk pengembangan, selalu true
+    return localStorage.getItem('isAuthenticated') === 'true';
+  };
+
+  /**
+   * Fungsi untuk memeriksa apakah pengguna adalah admin
+   * 
+   * @returns {boolean} Status admin pengguna
+   */
+  const isAdmin = () => {
+    const userInfo = localStorage.getItem('userInfo');
+    console.log('🔍 App.js isAdmin check - userInfo from localStorage:', userInfo);
+    
+    if (userInfo) {
+      try {
+        const user = JSON.parse(userInfo);
+        console.log('🔍 App.js isAdmin check - parsed user:', user);
+        console.log('🔍 App.js isAdmin check - user.is_admin:', user.is_admin);
+        console.log('🔍 App.js isAdmin check - typeof user.is_admin:', typeof user.is_admin);
+        return user.is_admin === true;
+      } catch (error) {
+        console.error('Error parsing user info:', error);
+        return false;
+      }
+    }
+    console.log('🔍 App.js isAdmin check - no userInfo found');
+    return false;
   };
 
   /**
@@ -72,6 +98,37 @@ function App() {
     if (!isAuthenticated()) {
       return <Navigate to="/login" replace />;
     }
+    return children;
+  };
+
+  /**
+   * Komponen untuk melindungi rute admin
+   * Mengarahkan pengguna ke halaman login jika belum terautentikasi
+   * atau ke home jika bukan admin
+   * 
+   * @param {Object} props - Properties komponen
+   * @param {React.ReactNode} props.children - Child components
+   * @returns {JSX.Element} Children component atau redirect
+   */
+  const AdminRoute = ({ children }) => {
+    const isAuth = isAuthenticated();
+    const isAdminUser = isAdmin();
+    
+    console.log('🔍 AdminRoute check - isAuthenticated():', isAuth);
+    console.log('🔍 AdminRoute check - isAdmin():', isAdminUser);
+    console.log('🔍 AdminRoute check - localStorage userInfo:', localStorage.getItem('userInfo'));
+    console.log('🔍 AdminRoute check - localStorage user_is_admin:', localStorage.getItem('user_is_admin'));
+    
+    if (!isAuth) {
+      console.log('❌ AdminRoute - User not authenticated, redirecting to login');
+      return <Navigate to="/login" replace />;
+    }
+    if (!isAdminUser) {
+      console.log('❌ AdminRoute - User not admin, redirecting to home');
+      return <Navigate to="/" replace />;
+    }
+    
+    console.log('✅ AdminRoute - Admin access granted');
     return children;
   };
 
@@ -207,14 +264,30 @@ function App() {
           } />
 
           {/* 
+            Halaman Browse Reviews - untuk menjelajahi semua review user
+            Tim backend: Implementasikan endpoint GET /api/reviews dengan filter dan pagination
+          */}
+          <Route path="/browse-reviews" element={
+            <ProtectedRoute>
+              <>
+                <Header />
+                <main className="flex-grow">
+                  <BrowseReviews />
+                </main>
+                <Footer />
+              </>
+            </ProtectedRoute>
+          } />
+
+          {/* 
             Dashboard Admin - untuk pengelolaan platform
             Tim backend: Implementasikan endpoint admin yang diproteksi
             dan periksa peran pengguna (admin = true) untuk akses
           */}
           <Route path="/admin" element={
-            <ProtectedRoute>
+            <AdminRoute>
               <AdminDashboard />
-            </ProtectedRoute>
+            </AdminRoute>
           } />
 
           {/* 

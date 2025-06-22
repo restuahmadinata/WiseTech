@@ -3,142 +3,168 @@
  * 
  * Fitur utama:
  * - Menampilkan daftar laptop dengan gambar dan informasi ringkas
- * - Filter berdasarkan brand, processor, range harga
+ * - Filter berdasarkan brand, range harga
  * - Sorting berdasarkan terbaru, rating, harga (rendah-tinggi, tinggi-rendah)
  * - Navigasi ke halaman detail laptop
  * 
- * API yang dibutuhkan:
+ * API yang digunakan:
  * - GET /api/gadgets?category=laptop
- * 
- * Parameter filter API:
- * - brands[]: Array brand untuk filter (opsional)
- * - processors[]: Array processor untuk filter (opsional, unique to laptops)
- * - priceMin: Harga minimum (opsional)
- * - priceMax: Harga maksimum (opsional)
- * - sortBy: Kriteria pengurutan - "newest", "rating", "price-low", "price-high" (opsional)
- * 
- * Format data laptop yang diharapkan dari API:
- * Array dari objek laptop dengan properti minimum:
- * id, name, brand, price, rating, image, description, releaseDate, processor
  */
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getProductPlaceholder } from '../../utils/placeholderImage';
+import { gadgetAPI } from '../../utils/api';
 
 const Laptops = () => {
   const [laptops, setLaptops] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     brands: [],
-    priceRange: [0, 3000],
-    processors: [],
+    minPrice: 0,
+    maxPrice: '',
     sortBy: 'newest'
   });
-    useEffect(() => {
-    // In a real application, this would be an API call
-    const fetchLaptops = async () => {
-      try {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Mock data for demonstration
-        let mockLaptops = [
-          {            id: 2,
-            name: 'Samsung Galaxy Book Pro',
-            brand: 'Samsung',
-            price: 1299,
-            rating: 4.5,
-            image: '',
-            releaseDate: '2023-05-14',
-            description: 'Ultra-thin laptop with stunning AMOLED display and all-day battery life.',
-            processor: 'Intel Core i7'
-          },
-          {            id: 10,
-            name: 'MacBook Pro 14"',
-            brand: 'Apple',
-            price: 1999,
-            rating: 4.8,
-            image: '',
-            releaseDate: '2023-10-30',
-            description: 'Powerful laptop with M3 Pro chip, stunning display and excellent battery life.',
-            processor: 'Apple M3 Pro'
-          },
-          {            id: 11,
-            name: 'Dell XPS 13',
-            brand: 'Dell',
-            price: 1199,
-            rating: 4.6,
-            image: '',
-            releaseDate: '2023-08-15',
-            description: 'Premium ultrabook with InfinityEdge display and excellent build quality.',
-            processor: 'Intel Core i7'
-          },
-          {            id: 12,
-            name: 'Lenovo ThinkPad X1 Carbon',
-            brand: 'Lenovo',
-            price: 1499,
-            rating: 4.7,
-            image: '',
-            releaseDate: '2023-06-20',
-            description: 'Business laptop with legendary keyboard and robust security features.',
-            processor: 'Intel Core i7'
-          },
-          {            id: 13,
-            name: 'HP Spectre x360',
-            brand: 'HP',
-            price: 1399,
-            rating: 4.5,
-            image: '',
-            releaseDate: '2023-07-10',
-            description: 'Convertible laptop with elegant design and vibrant OLED display.',
-            processor: 'Intel Core i7'
-          },
-          {            id: 14,
-            name: 'Asus ROG Zephyrus G14',
-            brand: 'Asus',
-            price: 1699,
-            rating: 4.6,
-            image: '',
-            releaseDate: '2023-04-05',
-            description: 'Compact gaming laptop with powerful AMD processor and RTX graphics.',
-            processor: 'AMD Ryzen 9'
-          },
-          {            id: 15,
-            name: 'Microsoft Surface Laptop 5',
-            brand: 'Microsoft',
-            price: 999,
-            rating: 4.4,
-            image: '',
-            releaseDate: '2023-03-15',
-            description: 'Elegant laptop with excellent display and clean Windows experience.',
-            processor: 'Intel Core i5'
-          },
-          {            id: 16,
-            name: 'Acer Swift 5',
-            brand: 'Acer',
-            price: 899,
-            rating: 4.3,
-            image: '',
-            releaseDate: '2023-02-12',
-            description: 'Ultra-lightweight laptop with antimicrobial display and fast charging.',
-            processor: 'Intel Core i5'
-          }
-        ];        
-        // Generate local placeholders instead of using external service
-        mockLaptops = mockLaptops.map(laptop => ({
-          ...laptop,
-          image: getProductPlaceholder(laptop.name, laptop.id)
-        }));
-        
-        setLaptops(mockLaptops);
-      } catch (error) {
-        console.error('Error fetching laptops:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
+  
+  // Separate state for price inputs (before applying)
+  const [priceInputs, setPriceInputs] = useState({
+    minPrice: 0,
+    maxPrice: ''
+  });
+  
+  useEffect(() => {
     fetchLaptops();
-  }, []);
+  }, [filters]);
+
+  const fetchLaptops = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Prepare API parameters
+      const params = {
+        category: 'Laptops',
+        page_size: 100 // Ensure we get a good amount of gadgets
+      };
+
+      // Add filters only if they have values
+      if (filters.minPrice > 0) {
+        params.min_price = filters.minPrice;
+      }
+      if (filters.maxPrice && filters.maxPrice > 0) {
+        params.max_price = filters.maxPrice;
+      }
+
+      // Add brand filter if selected
+      if (filters.brands.length > 0) {
+        params.brand = filters.brands.join(',');
+      }
+
+      const response = await gadgetAPI.getGadgets(params);
+      let laptopsData = response?.gadgets || response || [];
+      
+      // Apply client-side sorting
+      laptopsData = applySorting(laptopsData, filters.sortBy);
+      
+      setLaptops(laptopsData);
+    } catch (err) {
+      console.error('Error fetching laptops:', err);
+      setError('Failed to load laptops. Please try again later.');
+      
+      // Fallback to sample data if API fails
+      const mockLaptops = [
+        {
+          id: 2,
+          name: 'Samsung Galaxy Book Pro',
+          brand: 'Samsung',
+          price: 1299,
+          rating: 4.5,
+          image_url: 'https://placehold.co/300x200/4F46E5/FFFFFF?text=Galaxy+Book+Pro',
+          release_date: '2023-03-15',
+          description: 'Ultra-thin laptop with stunning AMOLED display and all-day battery life.',
+          processor: 'Intel Core i7'
+        },
+        {
+          id: 9,
+          name: 'MacBook Air M2',
+          brand: 'Apple',
+          price: 1199,
+          rating: 4.8,
+          image_url: 'https://placehold.co/300x200/4F46E5/FFFFFF?text=MacBook+Air+M2',
+          release_date: '2023-07-01',
+          description: 'Incredibly thin and light with the powerful M2 chip.',
+          processor: 'Apple M2'
+        },
+        {
+          id: 10,
+          name: 'Dell XPS 13',
+          brand: 'Dell',
+          price: 999,
+          rating: 4.6,
+          image_url: 'https://placehold.co/300x200/4F46E5/FFFFFF?text=Dell+XPS+13',
+          release_date: '2023-05-10',
+          description: 'Compact powerhouse with InfinityEdge display.',
+          processor: 'Intel Core i5'
+        },
+        {
+          id: 11,
+          name: 'HP Spectre x360',
+          brand: 'HP',
+          price: 1399,
+          rating: 4.4,
+          image_url: 'https://placehold.co/300x200/4F46E5/FFFFFF?text=HP+Spectre+x360',
+          release_date: '2023-04-20',
+          description: '2-in-1 convertible with premium design and performance.',
+          processor: 'Intel Core i7'
+        },
+        {
+          id: 12,
+          name: 'ASUS ZenBook 14',
+          brand: 'ASUS',
+          price: 849,
+          rating: 4.3,
+          image_url: 'https://placehold.co/300x200/4F46E5/FFFFFF?text=ASUS+ZenBook+14',
+          release_date: '2023-02-28',
+          description: 'Compact and powerful with NumberPad 2.0 touchscreen.',
+          processor: 'AMD Ryzen 7'
+        },
+        {
+          id: 13,
+          name: 'Lenovo ThinkPad X1 Carbon',
+          brand: 'Lenovo',
+          price: 1599,
+          rating: 4.7,
+          image_url: 'https://placehold.co/300x200/4F46E5/FFFFFF?text=ThinkPad+X1+Carbon',
+          release_date: '2023-01-15',
+          description: 'Business laptop with legendary durability and performance.',
+          processor: 'Intel Core i7'
+        }
+      ];
+      
+      setLaptops(mockLaptops);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Function to apply sorting to data
+  const applySorting = (data, sortBy) => {
+    switch (sortBy) {
+      case 'price_asc':
+        return [...data].sort((a, b) => a.price - b.price);
+      case 'price_desc':
+        return [...data].sort((a, b) => b.price - a.price);
+      case 'rating':
+        return [...data].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      case 'newest':
+      default:
+        return [...data].sort((a, b) => {
+          if (a.release_date && b.release_date) {
+            return new Date(b.release_date) - new Date(a.release_date);
+          }
+          return b.id - a.id; // fallback to ID if no release date
+        });
+    }
+  };
 
   // Function to render stars based on rating
   const renderStars = (rating) => {
@@ -173,40 +199,22 @@ const Laptops = () => {
           return { ...prev, brands: prev.brands.filter(brand => brand !== value) };
         }
       });
-    } else if (filterType === 'processor') {
-      setFilters(prev => {
-        if (checked) {
-          return { ...prev, processors: [...prev.processors, value] };
-        } else {
-          return { ...prev, processors: prev.processors.filter(proc => proc !== value) };
-        }
-      });
     } else if (filterType === 'sortBy') {
       setFilters(prev => ({ ...prev, sortBy: value }));
     }
   };
 
-  // Get unique brands and processors for filters
-  const availableBrands = [...new Set(laptops.map(item => item.brand))];
-  const availableProcessors = [...new Set(laptops.map(item => item.processor))];
+  // Function to apply price filter
+  const applyPriceFilter = () => {
+    setFilters(prev => ({
+      ...prev,
+      minPrice: priceInputs.minPrice,
+      maxPrice: priceInputs.maxPrice
+    }));
+  };
 
-  // Apply filters and sorting
-  const filteredAndSortedLaptops = laptops
-    .filter(laptop => filters.brands.length === 0 || filters.brands.includes(laptop.brand))
-    .filter(laptop => filters.processors.length === 0 || filters.processors.includes(laptop.processor))
-    .filter(laptop => laptop.price >= filters.priceRange[0] && laptop.price <= filters.priceRange[1])
-    .sort((a, b) => {
-      if (filters.sortBy === 'newest') {
-        return new Date(b.releaseDate) - new Date(a.releaseDate);
-      } else if (filters.sortBy === 'price-low') {
-        return a.price - b.price;
-      } else if (filters.sortBy === 'price-high') {
-        return b.price - a.price;
-      } else if (filters.sortBy === 'rating') {
-        return b.rating - a.rating;
-      }
-      return 0;
-    });
+  // Static brand list to prevent disappearing options when filters are applied
+  const brandsToShow = ['Apple', 'Samsung', 'Dell', 'HP', 'ASUS', 'Lenovo', 'Acer', 'MSI', 'Microsoft'];
 
   if (loading) {
     return (
@@ -217,21 +225,37 @@ const Laptops = () => {
   }
 
   return (
-    <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+    <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Hero section */}
-        <div className="rounded-xl overflow-hidden bg-gradient-to-r from-indigo-600 to-purple-700 shadow-lg">
+        <div className="rounded-xl overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg">
           <div className="px-6 py-12 sm:px-12 sm:py-16 lg:py-20">
             <div className="max-w-3xl">
               <h1 className="text-3xl sm:text-4xl font-extrabold text-white">
-                Explore Premium Laptops
+                Find Your Perfect Laptop
               </h1>
-              <p className="mt-4 text-lg text-indigo-100">
-                Find the perfect laptop for work, creativity, gaming, or everyday use.
+              <p className="mt-4 text-lg text-blue-100">
+                Discover laptops for work, gaming, and creativity. Compare specs and read reviews.
               </p>
             </div>
           </div>
         </div>
+
+        {/* Error message */}
+        {error && (
+          <div className="mt-8 bg-red-50 border border-red-200 rounded-md p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Filters and product grid */}
         <div className="mt-8 lg:grid lg:grid-cols-4 lg:gap-x-8 xl:gap-x-10">
@@ -244,7 +268,7 @@ const Laptops = () => {
               <div className="py-4 border-t border-gray-200">
                 <h3 className="text-sm font-medium text-gray-700 mb-2">Brand</h3>
                 <div className="space-y-2">
-                  {availableBrands.map((brand) => (
+                  {brandsToShow.map((brand) => (
                     <div key={brand} className="flex items-center">
                       <input
                         id={`brand-${brand}`}
@@ -262,46 +286,51 @@ const Laptops = () => {
                   ))}
                 </div>
               </div>
-              
-              {/* Processor filter */}
-              <div className="py-4 border-t border-gray-200">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Processor</h3>
-                <div className="space-y-2">
-                  {availableProcessors.map((processor) => (
-                    <div key={processor} className="flex items-center">
-                      <input
-                        id={`processor-${processor}`}
-                        name="processor"
-                        value={processor}
-                        type="checkbox"
-                        checked={filters.processors.includes(processor)}
-                        onChange={(e) => handleFilterChange(e, 'processor')}
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                      />
-                      <label htmlFor={`processor-${processor}`} className="ml-2 text-sm text-gray-700">
-                        {processor}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
+
               {/* Price range filter */}
               <div className="py-4 border-t border-gray-200">
                 <h3 className="text-sm font-medium text-gray-700 mb-2">Price Range</h3>
-                <div className="mt-2 px-1">
-                  <div className="text-xs text-gray-500 flex justify-between">
-                    <span>${filters.priceRange[0]}</span>
-                    <span>${filters.priceRange[1]}</span>
+                <div className="mt-2 space-y-3">
+                  <div>
+                    <label className="text-xs text-gray-500 block mb-1">Min Price ($)</label>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      value={priceInputs.minPrice}
+                      onChange={(e) => {
+                        const newMin = Math.max(0, parseInt(e.target.value) || 0);
+                        setPriceInputs(prev => ({ 
+                          ...prev, 
+                          minPrice: newMin
+                        }));
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="0"
+                    />
                   </div>
-                  <input 
-                    type="range" 
-                    min="0" 
-                    max="3000" 
-                    value={filters.priceRange[1]}
-                    onChange={(e) => setFilters(prev => ({ ...prev, priceRange: [prev.priceRange[0], parseInt(e.target.value)] }))}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-2"
-                  />
+                  <div>
+                    <label className="text-xs text-gray-500 block mb-1">Max Price ($)</label>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      value={priceInputs.maxPrice}
+                      onChange={(e) => {
+                        const newMax = parseInt(e.target.value) || '';
+                        setPriceInputs(prev => ({ 
+                          ...prev, 
+                          maxPrice: newMax === '' ? '' : Math.max(newMax, prev.minPrice)
+                        }));
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="No limit"
+                    />
+                  </div>
+                  <button
+                    onClick={applyPriceFilter}
+                    className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors duration-200"
+                  >
+                    Cari
+                  </button>
                 </div>
               </div>
 
@@ -312,8 +341,8 @@ const Laptops = () => {
                   {[
                     { value: 'newest', label: 'Newest' },
                     { value: 'rating', label: 'Highest Rated' },
-                    { value: 'price-low', label: 'Price: Low to High' },
-                    { value: 'price-high', label: 'Price: High to Low' }
+                    { value: 'price_asc', label: 'Price: Low to High' },
+                    { value: 'price_desc', label: 'Price: High to Low' }
                   ].map((option) => (
                     <div key={option.value} className="flex items-center">
                       <input
@@ -339,19 +368,21 @@ const Laptops = () => {
           <div className="mt-6 lg:mt-0 lg:col-span-3">
             {/* Mobile filters */}
             <div className="flex items-center justify-between mb-4 lg:hidden">
-              <div>                <select
-                  className="select select-bordered select-sm w-full"
+              <div>
+                <select
+                  className="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                   value={filters.sortBy}
                   onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
                 >
                   <option value="newest">Sort by: Newest</option>
                   <option value="rating">Sort by: Highest Rated</option>
-                  <option value="price-low">Sort by: Price Low to High</option>
-                  <option value="price-high">Sort by: Price High to Low</option>
+                  <option value="price_asc">Sort by: Price Low to High</option>
+                  <option value="price_desc">Sort by: Price High to Low</option>
                 </select>
-              </div>              <button
+              </div>
+              <button
                 type="button"
-                className="btn btn-ghost btn-sm"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 <svg className="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd" />
@@ -363,47 +394,47 @@ const Laptops = () => {
             {/* Results count */}
             <div className="mb-4">
               <p className="text-sm text-gray-500">
-                Showing {filteredAndSortedLaptops.length} laptops
+                Showing {laptops.length} laptops
               </p>
-            </div>            {/* Products */}
+            </div>
+
+            {/* Products */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredAndSortedLaptops.map((laptop) => (
+              {laptops.map((laptop) => (
                 <Link 
                   to={`/gadget/${laptop.id}`}
                   key={laptop.id} 
+                  className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full"
                 >
-                  <div className="card card-compact bg-base-100 shadow-xl h-full hover:shadow-2xl transition-all duration-300">
-                    <figure className="bg-base-200">
-                      <img 
-                        src={laptop.image} 
-                        alt={laptop.name}
-                        className="h-48 w-full object-cover"
-                      />
-                    </figure>
-                    <div className="card-body">
-                      <h2 className="card-title text-primary">
+                  <div className="aspect-w-4 aspect-h-3 bg-gray-200 overflow-hidden">
+                    <img 
+                      src={laptop.image_url || laptop.image || 'https://placehold.co/300x200/4F46E5/FFFFFF?text=' + encodeURIComponent(laptop.name)} 
+                      alt={laptop.name}
+                      className="w-full h-full object-center object-cover group-hover:opacity-90 transition-opacity duration-300"
+                      onError={(e) => {
+                        e.target.src = 'https://placehold.co/300x200/4F46E5/FFFFFF?text=' + encodeURIComponent(laptop.name);
+                      }}
+                    />
+                  </div>
+                  <div className="p-5 flex-grow flex flex-col">
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900 group-hover:text-indigo-600 transition-colors duration-150">
                         {laptop.name}
-                        <div className="badge badge-secondary">{laptop.brand}</div>
-                      </h2>
-                      <p className="text-xs opacity-70">{laptop.processor}</p>
-                      <div className="rating rating-sm">
-                        {[1, 2, 3, 4, 5].map(star => (
-                          <input 
-                            key={star} 
-                            type="radio" 
-                            name={`rating-${laptop.id}`} 
-                            className={`mask mask-star-2 ${star <= Math.round(laptop.rating) ? 'bg-warning' : 'bg-base-300'}`} 
-                            disabled 
-                            checked={star === Math.round(laptop.rating)}
-                          />
-                        ))}
-                        <span className="ml-2 text-xs">({laptop.rating})</span>
+                      </h3>
+                      <p className="mt-1 text-sm text-gray-500">{laptop.brand}</p>
+                      {laptop.processor && (
+                        <p className="mt-1 text-xs text-blue-600 font-medium">{laptop.processor}</p>
+                      )}
+                    </div>
+                    <div className="mt-2 flex items-center">
+                      <div className="flex items-center">
+                        {renderStars(Math.round(laptop.rating))}
                       </div>
-                      <p className="text-sm line-clamp-2">{laptop.description}</p>
-                      <div className="card-actions justify-between items-center mt-2">
-                        <span className="text-lg font-semibold">${laptop.price}</span>
-                        <button className="btn btn-primary btn-sm">View Details</button>
-                      </div>
+                      <p className="ml-1 text-sm text-gray-500">{laptop.rating}</p>
+                    </div>
+                    <p className="mt-2 text-sm text-gray-700 line-clamp-2">{laptop.description}</p>
+                    <div className="mt-auto pt-4">
+                      <p className="font-medium text-gray-900">${laptop.price}</p>
                     </div>
                   </div>
                 </Link>
