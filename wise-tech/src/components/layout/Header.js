@@ -1,16 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useTheme } from '../../utils/theme';
+import { authUtils, userAPI } from '../../utils/api';
 
 /**
  * Komponen Header - Navigasi utama aplikasi
- * 
- * Menggunakan komponen DaisyUI:
- * - navbar: Layout dasar untuk navigasi
- * - dropdown: Menu dropdown untuk navigasi mobile dan profil
- * - menu: Untuk tampilan item navigasi
- * - input: Untuk kolom pencarian
- * - button: Untuk tombol aksi
  * 
  * Fitur utama:
  * - Navigasi ke halaman utama dan kategori (Smartphones, Laptops, Tablets)
@@ -28,20 +21,116 @@ import { useTheme } from '../../utils/theme';
  * - Logout: Menghapus token autentikasi dari localStorage
  */
 const Header = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
   const navigate = useNavigate();
-  const { toggleTheme } = useTheme();
+  const profileMenuRef = useRef(null);
+
+  // Helper function to get full profile photo URL
+  const getProfilePhotoUrl = (photoPath) => {
+    if (!photoPath) return null;
+    if (photoPath.startsWith('http')) return photoPath; // Already full URL
+    return `http://localhost:8000${photoPath}`; // Add API base URL
+  };
+
+  // Load user profile when component mounts
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (authUtils.getAccessToken()) {
+        try {
+          const profile = await userAPI.getProfile();
+          setUserProfile(profile);
+        } catch (error) {
+          console.error('Error loading user profile in header:', error);
+          // Fallback to stored user info
+          const userInfo = authUtils.getUserInfo();
+          if (userInfo) {
+            setUserProfile({
+              full_name: userInfo.name,
+              email: userInfo.email,
+              profile_photo: null
+            });
+          }
+        }
+      }
+    };
+
+    loadUserProfile();
+
+    // Listen for profile updates
+    const handleProfileUpdate = (event) => {
+      console.log('📳 Header received profile update:', event.detail);
+      setUserProfile(prev => ({
+        ...prev,
+        ...event.detail
+      }));
+      console.log('🔄 Header profile updated');
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
+  }, []);
+
+  // Close profile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
 
   const toggleProfileMenu = () => {
     setIsProfileMenuOpen(!isProfileMenuOpen);
   };
-  
+
   const handleLogout = () => {
-    // Clear authentication
+    const userInfo = authUtils.getUserInfo();
+    // Check if user is admin - show confirmation for admin users
+    if (userInfo?.is_admin) {
+      setShowLogoutModal(true);
+    } else {
+      // Direct logout for regular users
+      performLogout();
+    }
+  };
+
+  const performLogout = () => {
+    // Clear authentication properly
+    authUtils.removeToken();
+    authUtils.clearUserInfo();
     localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('adminLastLogin');
+    localStorage.removeItem('userLastLogin');
+    
+    console.log('✅ User logged out');
+    
     // Redirect to login page
     navigate('/login');
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutModal(false);
+    performLogout();
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutModal(false);
   };
   
   /**
@@ -52,6 +141,7 @@ const Header = () => {
    * 2. Memeriksa apakah query pencarian tidak kosong
    * 3. Mengarahkan ke halaman Search dengan query parameter
    * 4. Mengosongkan input pencarian setelah navigasi
+   * 5. Menutup menu mobile jika terbuka
    * 
    * @param {Event} e - Event object
    */
@@ -60,108 +150,296 @@ const Header = () => {
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery('');
+      // Close mobile menu if open
+      if (isMenuOpen) {
+        setIsMenuOpen(false);
+      }
     }
   };
   return (
-    <div className="bg-gradient-to-r from-primary to-secondary shadow-lg text-base-100">
-      <div className="navbar max-w-7xl mx-auto px-4">
-        <div className="navbar-start">
-          {/* Mobile menu dropdown */}
-          <div className="dropdown">
-            <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8m-8 6h16" />
-              </svg>
+    <header className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 shadow-lg relative z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          <div className="flex">
+            <div className="flex-shrink-0 flex items-center">
+              <Link to="/" className="text-2xl font-extrabold text-white drop-shadow-md hover:text-indigo-100 transition-all duration-300 transform hover:scale-105">
+                WiseTech
+              </Link>
             </div>
-            <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
-              {/* Mobile search */}
-              <li className="mb-2">
-                <form onSubmit={handleSearch} className="relative w-full px-2">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search gadgets..."
-                    className="input input-bordered input-sm w-full"
-                    autoComplete="off"
-                  />
-                  <button type="submit" className="btn btn-sm btn-ghost btn-circle absolute right-2 top-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+            <nav className="hidden md:ml-6 md:flex md:space-x-8">
+              <Link to="/" className="inline-flex items-center px-3 pt-1 border-b-2 border-transparent text-sm font-bold text-white hover:text-indigo-100 hover:border-white transition-all duration-300">
+                Home
+              </Link>
+              <Link to="/smartphones" className="inline-flex items-center px-3 pt-1 border-b-2 border-transparent text-sm font-bold text-white hover:text-indigo-100 hover:border-white transition-all duration-300">
+                Smartphones
+              </Link>
+              <Link to="/laptops" className="inline-flex items-center px-3 pt-1 border-b-2 border-transparent text-sm font-bold text-white hover:text-indigo-100 hover:border-white transition-all duration-300">
+                Laptops
+              </Link>
+              <Link to="/tablets" className="inline-flex items-center px-3 pt-1 border-b-2 border-transparent text-sm font-bold text-white hover:text-indigo-100 hover:border-white transition-all duration-300">
+                Tablets
+              </Link>
+              <Link to="/browse-reviews" className="inline-flex items-center px-3 pt-1 border-b-2 border-transparent text-sm font-bold text-white hover:text-indigo-100 hover:border-white transition-all duration-300">
+                Browse Reviews
+              </Link>
+            </nav>          </div>
+          
+          {/* Search bar - Desktop */}
+          <div className="hidden md:flex md:flex-1 md:items-center md:justify-center px-2">
+            <div className="max-w-lg w-full">
+              <form onSubmit={handleSearch} className="relative">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search gadgets..."
+                  className="w-full bg-white bg-opacity-20 text-white placeholder-gray-100 rounded-full py-2 px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-white focus:border-white text-sm"
+                />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+              </form>
+            </div>
+          </div>
+          
+          <div className="hidden md:ml-6 md:flex md:items-center">
+            <div className="ml-3 relative" ref={profileMenuRef}>
+              <div>
+                <button
+                  onClick={toggleProfileMenu}
+                  className="max-w-xs flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-300"
+                >
+                  <span className="sr-only">Open user menu</span>
+                  <div className="h-9 w-9 rounded-full bg-gradient-to-r from-indigo-300 to-purple-400 p-0.5 shadow-lg transform transition-all duration-300 hover:scale-110">
+                    {userProfile?.profile_photo ? (
+                      <img 
+                        src={getProfilePhotoUrl(userProfile.profile_photo)} 
+                        alt="Profile" 
+                        className="h-8 w-8 rounded-full object-cover"
+                        onLoad={() => console.log('✅ Header profile photo loaded:', getProfilePhotoUrl(userProfile.profile_photo))}
+                        onError={(e) => {
+                          console.error('❌ Header: Failed to load profile photo:', userProfile.profile_photo);
+                          console.error('❌ Header: Full URL attempted:', getProfilePhotoUrl(userProfile.profile_photo));
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div 
+                      className={`h-8 w-8 rounded-full bg-gradient-to-r from-indigo-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold ${userProfile?.profile_photo ? 'hidden' : 'flex'}`}
+                    >
+                      {userProfile ? (userProfile.full_name || userProfile.email || 'U')[0].toUpperCase() : 'U'}
+                    </div>
+                  </div>
+                </button>
+              </div>
+
+              {isProfileMenuOpen && (
+                <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-xl shadow-xl py-1 bg-white bg-opacity-90 backdrop-filter backdrop-blur-lg ring-1 ring-black ring-opacity-5 z-50 border border-indigo-100">
+                  {/* User info header */}
+                  {userProfile && (
+                    <div className="px-4 py-3 border-b border-gray-200">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-300 to-purple-400 p-0.5">
+                          {userProfile.profile_photo ? (
+                            <img 
+                              src={getProfilePhotoUrl(userProfile.profile_photo)} 
+                              alt="Profile" 
+                              className="w-full h-full rounded-full object-cover"
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.nextSibling.style.display = 'flex';
+                              }}
+                            />
+                          ) : null}
+                          <div className={`w-full h-full rounded-full bg-gradient-to-r from-indigo-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold ${userProfile.profile_photo ? 'hidden' : 'flex'}`}>
+                            {(userProfile.full_name || userProfile.email)[0].toUpperCase()}
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {userProfile.full_name || 'User'}
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {userProfile.email}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <Link to="/profile" className="block px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-50 transition-colors duration-200 rounded-md mx-1 my-1">Your Profile</Link>
+                  <Link to="/settings" className="block px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-50 transition-colors duration-200 rounded-md mx-1 my-1">Settings</Link>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left block px-4 py-2 text-sm font-medium text-pink-700 hover:bg-pink-50 transition-colors duration-200 rounded-md mx-1 my-1"
+                  >
+                    Sign out
                   </button>
-                </form>
-              </li>
-              <li><Link to="/">Home</Link></li>
-              <li><Link to="/smartphones">Smartphones</Link></li>
-              <li><Link to="/laptops">Laptops</Link></li>
-              <li><Link to="/tablets">Tablets</Link></li>
-            </ul>
-          </div>
-          
-          {/* Brand logo */}
-          <Link to="/" className="btn btn-ghost text-xl font-extrabold text-white hover:scale-105 transition-transform">
-            WiseTech
-          </Link>
-          
-          {/* Desktop navigation */}
-          <div className="navbar-center hidden lg:flex">
-            <ul className="menu menu-horizontal px-1">
-              <li><Link to="/" className="text-white hover:text-indigo-100">Home</Link></li>
-              <li><Link to="/smartphones" className="text-white hover:text-indigo-100">Smartphones</Link></li>
-              <li><Link to="/laptops" className="text-white hover:text-indigo-100">Laptops</Link></li>
-              <li><Link to="/tablets" className="text-white hover:text-indigo-100">Tablets</Link></li>
-            </ul>
-          </div>
-        </div>
-        
-        {/* Search bar - Desktop */}
-        <div className="navbar-center hidden lg:flex">
-          <form onSubmit={handleSearch} className="form-control relative">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search gadgets..."
-              className="input input-bordered input-sm w-64 md:w-80 bg-white bg-opacity-20 text-white placeholder-gray-100"
-            />
-            <button type="submit" className="btn btn-sm btn-ghost btn-circle absolute right-0 top-0">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </div>
+              )}
+            </div>
+          </div>          <div className="-mr-2 flex items-center md:hidden">
+            <button
+              onClick={toggleMenu}
+              className="inline-flex items-center justify-center p-2 rounded-md text-white hover:text-indigo-100 hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-300 transition-all duration-300"
+            >
+              <span className="sr-only">Open main menu</span>
+              <svg
+                className={`${isMenuOpen ? 'hidden' : 'block'} h-6 w-6`}
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+              <svg
+                className={`${isMenuOpen ? 'block' : 'hidden'} h-6 w-6`}
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-          </form>
+          </div>
         </div>
-          {/* User profile dropdown */}
-        <div className="navbar-end">
-          {/* Theme toggle button */}          <label className="swap swap-rotate mr-3">
-            <input type="checkbox" className="theme-controller" value="dark" onChange={toggleTheme} />
-            
-            {/* Sun icon */}
-            <svg className="swap-on fill-current w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"/></svg>
-            
-            {/* Moon icon */}
-            <svg className="swap-off fill-current w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z"/></svg>
-          </label>
-          
-          <div className="dropdown dropdown-end">            <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-              <div className="w-10 rounded-full bg-base-200">
-                <svg className="h-10 w-10 text-primary p-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" />
+      </div>      {/* Mobile menu */}
+      <div className={`${isMenuOpen ? 'block' : 'hidden'} md:hidden`}>
+        <div className="pt-2 pb-3 space-y-1 bg-gradient-to-b from-indigo-400 to-purple-500">
+          {/* Mobile search bar with animation */}
+          <div className="px-4 py-2 animate-fadeIn">
+            <form onSubmit={handleSearch} className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search gadgets..."
+                className="w-full bg-white bg-opacity-20 text-white placeholder-gray-100 rounded-full py-2 px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-white focus:border-white text-sm shadow-inner transition-all duration-300"
+                autoComplete="off"
+              />
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-              </div>            </div>
-            <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
-              <li>
-                <Link to="/profile" className="text-base-content hover:text-primary">
-                  Profile
-                </Link>
-              </li>
-              <li><button onClick={handleLogout} className="text-base-content hover:text-primary">Logout</button></li>
-            </ul>
+              </div>
+              <button type="submit" className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                <svg className="h-5 w-5 text-white hover:text-indigo-200 transition-colors duration-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </button>
+            </form>
+          </div>
+          <Link to="/" className="block pl-3 pr-4 py-3 border-l-4 border-transparent text-base font-medium text-white hover:bg-purple-600 hover:border-indigo-200 hover:text-indigo-100 transition-all duration-200">
+            Home
+          </Link>
+          <Link to="/smartphones" className="block pl-3 pr-4 py-3 border-l-4 border-transparent text-base font-medium text-white hover:bg-purple-600 hover:border-indigo-200 hover:text-indigo-100 transition-all duration-200">
+            Smartphones
+          </Link>
+          <Link to="/laptops" className="block pl-3 pr-4 py-3 border-l-4 border-transparent text-base font-medium text-white hover:bg-purple-600 hover:border-indigo-200 hover:text-indigo-100 transition-all duration-200">
+            Laptops
+          </Link>
+          <Link to="/tablets" className="block pl-3 pr-4 py-3 border-l-4 border-transparent text-base font-medium text-white hover:bg-purple-600 hover:border-indigo-200 hover:text-indigo-100 transition-all duration-200">
+            Tablets
+          </Link>
+          <Link to="/browse-reviews" className="block pl-3 pr-4 py-3 border-l-4 border-transparent text-base font-medium text-white hover:bg-purple-600 hover:border-indigo-200 hover:text-indigo-100 transition-all duration-200">
+            Browse Reviews
+          </Link>
+        </div>        <div className="pt-4 pb-3 border-t border-purple-400 bg-gradient-to-b from-purple-500 to-pink-500">
+          <div className="flex items-center px-4">
+            <div className="flex-shrink-0">
+              <div className="h-11 w-11 rounded-full bg-gradient-to-r from-indigo-300 to-purple-400 p-0.5 shadow-lg">
+                {userProfile?.profile_photo ? (
+                  <img 
+                    src={getProfilePhotoUrl(userProfile.profile_photo)} 
+                    alt="Profile" 
+                    className="h-10 w-10 rounded-full object-cover"
+                    onLoad={() => console.log('✅ Mobile profile photo loaded:', getProfilePhotoUrl(userProfile.profile_photo))}
+                    onError={(e) => {
+                      console.error('❌ Mobile: Failed to load profile photo:', userProfile.profile_photo);
+                      console.error('❌ Mobile: Full URL attempted:', getProfilePhotoUrl(userProfile.profile_photo));
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div 
+                  className={`h-10 w-10 rounded-full bg-gradient-to-r from-indigo-400 to-purple-500 flex items-center justify-center text-white text-sm font-bold ${userProfile?.profile_photo ? 'hidden' : 'flex'}`}
+                >
+                  {userProfile ? (userProfile.full_name || userProfile.email || 'U')[0].toUpperCase() : 'U'}
+                </div>
+              </div>
+            </div>
+            <div className="ml-3">
+              <div className="text-base font-medium text-white">{userProfile?.full_name || 'User'}</div>
+              <div className="text-sm font-medium text-indigo-100">{userProfile?.email || 'user@example.com'}</div>
+            </div>
+          </div>
+          <div className="mt-3 space-y-1 px-2">
+            <Link to="/profile" className="block px-4 py-2 text-base font-medium text-white rounded-lg hover:bg-purple-600 transition-all duration-200">
+              Your Profile
+            </Link>
+            <Link to="/settings" className="block px-4 py-2 text-base font-medium text-white rounded-lg hover:bg-purple-600 transition-all duration-200">
+              Settings
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="w-full text-left block px-4 py-2 text-base font-medium text-white rounded-lg hover:bg-pink-600 transition-all duration-200"
+            >
+              Sign out
+            </button>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Logout Confirmation Modal for Admin */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" onClick={cancelLogout}>
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" onClick={(e) => e.stopPropagation()}>
+            <div className="mt-3 text-center">
+              {/* Icon */}
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100">
+                <svg className="h-6 w-6 text-yellow-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+
+              {/* Title */}
+              <h3 className="text-lg font-medium text-gray-900 mt-2">Admin Logout Confirmation</h3>
+              
+              {/* Message */}
+              <div className="mt-2 px-7 py-3">
+                <p className="text-sm text-gray-500">
+                  You are currently logged in as an administrator. Are you sure you want to logout? You will need to login again to access admin features.
+                </p>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex justify-center space-x-4 px-4 py-3">
+                <button
+                  onClick={cancelLogout}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmLogout}
+                  className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                >
+                  Yes, Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </header>
   );
 };
 

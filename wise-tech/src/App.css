@@ -93,3 +93,31 @@
 .mobile-search:focus {
   transform: scale(1.02);
 }
+
+/* Form styling for better usability */
+.review-form input,
+.review-form textarea {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+}
+
+.review-form {
+  position: relative;
+  z-index: 1;
+}
+
+/* Ensure input fields are interactive */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+  position: relative;
+  pointer-events: auto;
+  cursor: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
