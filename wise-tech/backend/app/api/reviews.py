@@ -106,6 +106,7 @@ def get_all_reviews(
                 "id": review.user.id,
                 "username": review.user.username,
                 "full_name": getattr(review.user, 'full_name', None),
+                "profile_photo": getattr(review.user, 'profile_photo', None),
             },
             "gadget": {
                 "id": review.gadget.id,

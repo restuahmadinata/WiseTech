@@ -110,6 +110,12 @@ def read_gadget(
         review_dict = {
             **review.__dict__,
             "user_name": review.user.username,
+            "user": {
+                "id": review.user.id,
+                "username": review.user.username,
+                "full_name": getattr(review.user, 'full_name', None),
+                "profile_photo": getattr(review.user, 'profile_photo', None),
+            }
         }
         reviews_with_usernames.append(schemas.ReviewInGadget(**review_dict))
         
@@ -140,12 +146,18 @@ def read_gadget_reviews(
         db, gadget_id=id, skip=skip, limit=limit
     )
     
-    # Add user names to reviews
+    # Add user names and profile info to reviews
     result = []
     for review in reviews:
         review_dict = {
             **review.__dict__,
             "user_name": review.user.username,
+            "user": {
+                "id": review.user.id,
+                "username": review.user.username,
+                "full_name": getattr(review.user, 'full_name', None),
+                "profile_photo": getattr(review.user, 'profile_photo', None),
+            }
         }
         result.append(schemas.Review(**review_dict))
         
