@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
-    <footer className="bg-gradient-to-r from-indigo-900 via-purple-900 to-pink-900 relative overflow-hidden">
+    <footer className="bg-gradient-to-r from-indigo-900 via-purple-900 to-indigo-900 relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
       <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-gradient-to-r from-indigo-500 to-blue-600 mix-blend-multiply filter blur-3xl opacity-10"></div>

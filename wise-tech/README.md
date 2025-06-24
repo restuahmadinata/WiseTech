@@ -92,11 +92,31 @@ Setelah menjalankan script inisialisasi database, akun berikut akan tersedia:
 
 ## Fitur Utama
 
-- **Autentikasi pengguna**: Register, login, dan profil pengguna
-- **Eksplorasi gadget**: Browse dan filter berdasarkan kategori, brand, dan harga
+- **Autentikasi pengguna**: Register, login, dan profil pengguna dengan username dan foto profil
+- **Eksplorasi gadget**: Browse dan filter berdasarkan kategori (Smartphones, Laptops, Tablets)
 - **Detail gadget**: Informasi lengkap dan spesifikasi
-- **Sistem ulasan**: Baca dan tulis ulasan gadget
-- **Dashboard admin**: Kelola pengguna, gadget, dan ulasan
+- **Sistem ulasan**: Baca, tulis, edit, dan hapus ulasan gadget
+- **Dashboard admin**: Kelola pengguna, gadget, dan ulasan dengan fitur advanced
+- **Upload foto profil**: Upload, preview, dan kelola foto profil pengguna
+- **Search & filter**: Pencarian global dan filter advanced
+- **Real-time updates**: Update dashboard admin secara real-time
+- **Export data**: Export data admin ke CSV
+
+## Panduan Pengguna
+
+Untuk panduan lengkap penggunaan aplikasi, lihat [User Guide](docs/USER_GUIDE.md) yang mencakup:
+
+- Cara registrasi dan login
+- Navigasi dan pencarian gadget
+- Menulis dan mengelola review
+- Upload dan mengelola foto profil
+- Fitur admin dashboard
+- Troubleshooting dan tips
+
+## Dokumentasi Tambahan
+
+- [Profile Photo Guide](docs/PROFILE_PHOTO_GUIDE.md) - Panduan khusus fitur foto profil
+- [User Guide](docs/USER_GUIDE.md) - Panduan lengkap pengguna
 
 ## Teknologi yang Digunakan
 

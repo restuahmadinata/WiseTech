@@ -196,10 +196,17 @@ def create_review(
         db, obj_in=review_in, user_id=current_user.id
     )
     
-    # Add user name to review
+    # Add complete user info to review response
     review_dict = {
         **review.__dict__,
         "user_name": current_user.username,
+        "user": {
+            "id": current_user.id,
+            "username": current_user.username,
+            "full_name": current_user.full_name,
+            "profile_photo": current_user.profile_photo,
+            "bio": current_user.bio,
+        }
     }
     
     return schemas.Review(**review_dict)
@@ -233,10 +240,17 @@ def update_review(
     # Update review
     updated_review = crud.review.update(db, db_obj=review, obj_in=review_in)
     
-    # Add user name to review
+    # Add complete user info to review response
     review_dict = {
         **updated_review.__dict__,
         "user_name": updated_review.user.username,
+        "user": {
+            "id": updated_review.user.id,
+            "username": updated_review.user.username,
+            "full_name": updated_review.user.full_name,
+            "profile_photo": updated_review.user.profile_photo,
+            "bio": updated_review.user.bio,
+        }
     }
     
     return schemas.Review(**review_dict)

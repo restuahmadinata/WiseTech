@@ -119,14 +119,8 @@ const Header = () => {
   };
 
   const handleLogout = () => {
-    const userInfo = authUtils.getUserInfo();
-    // Check if user is admin - show confirmation for admin users
-    if (userInfo?.is_admin) {
-      setShowLogoutModal(true);
-    } else {
-      // Direct logout for regular users
-      performLogout();
-    }
+    // Show confirmation modal for all users
+    setShowLogoutModal(true);
   };
 
   const performLogout = () => {
@@ -176,7 +170,7 @@ const Header = () => {
     }
   };
   return (
-    <header className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 shadow-lg relative z-50">
+    <header className="bg-gradient-to-r from-indigo-700 via-purple-700 to-indigo-700 shadow-lg relative z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
@@ -398,12 +392,6 @@ const Header = () => {
                       >
                         Your Profile
                       </Link>
-                      <Link
-                        to="/settings"
-                        className="block px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-50 transition-colors duration-200 rounded-md mx-1 my-1"
-                      >
-                        Settings
-                      </Link>
                     </>
                   )}
 
@@ -415,9 +403,6 @@ const Header = () => {
                       >
                         Admin Dashboard
                       </Link>
-                      <div className="block px-4 py-2 text-sm font-medium text-gray-500 cursor-not-allowed opacity-50 rounded-md mx-1 my-1">
-                        Admin Settings
-                      </div>
                     </>
                   )}
 
@@ -620,12 +605,6 @@ const Header = () => {
                 >
                   Your Profile
                 </Link>
-                <Link
-                  to="/settings"
-                  className="block px-4 py-2 text-base font-medium text-white rounded-lg hover:bg-purple-600 transition-all duration-200"
-                >
-                  Settings
-                </Link>
               </>
             )}
 
@@ -637,9 +616,6 @@ const Header = () => {
                 >
                   Admin Dashboard
                 </Link>
-                <div className="block px-4 py-2 text-base font-medium text-gray-300 cursor-not-allowed opacity-50 rounded-lg">
-                  Admin Settings
-                </div>
               </>
             )}
 
@@ -653,7 +629,7 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Logout Confirmation Modal for Admin */}
+      {/* Logout Confirmation Modal */}
       {showLogoutModal && (
         <div
           className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
@@ -684,15 +660,14 @@ const Header = () => {
 
               {/* Title */}
               <h3 className="text-lg font-medium text-gray-900 mt-2">
-                Admin Logout Confirmation
+                Confirm Logout
               </h3>
 
               {/* Message */}
               <div className="mt-2 px-7 py-3">
                 <p className="text-sm text-gray-500">
-                  You are currently logged in as an administrator. Are you sure
-                  you want to logout? You will need to login again to access
-                  admin features.
+                  Are you sure you want to logout? You will need to login again
+                  to access your account.
                 </p>
               </div>
 

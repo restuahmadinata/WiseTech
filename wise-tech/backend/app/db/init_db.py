@@ -47,35 +47,35 @@ def init_db(db: Session) -> None:
     sample_users = [
         {
             "email": "john.doe@example.com",
-            "username": "johndoe",
+            "username": "John Doe",
             "password": "password123",
             "full_name": "John Doe",
             "bio": "Tech enthusiast and reviewer specializing in smartphones.",
         },
         {
             "email": "sarah.smith@example.com",
-            "username": "sarahsmith",
+            "username": "Sarah Smith",
             "password": "password123",
             "full_name": "Sarah Smith",
             "bio": "Passionate about smartphones and mobile photography.",
         },
         {
             "email": "michael.johnson@example.com",
-            "username": "mikejohnson",
+            "username": "Mike Johnson",
             "password": "password123",
             "full_name": "Michael Johnson",
             "bio": "Computer engineer and laptop expert.",
         },
         {
             "email": "emily.chen@example.com",
-            "username": "emilychen",
+            "username": "Emily Chenny",
             "password": "password123",
             "full_name": "Emily Chen",
             "bio": "Content creator and tablet enthusiast.",
         },
         {
             "email": "david.wilson@example.com",
-            "username": "davidwilson",
+            "username": "DavidWilsons ",
             "password": "password123",
             "full_name": "David Wilson",
             "bio": "Gaming enthusiast and hardware reviewer.",
@@ -89,56 +89,56 @@ def init_db(db: Session) -> None:
         },
         {
             "email": "james.taylor@example.com",
-            "username": "jamestaylor",
+            "username": "Jamestaylor",
             "password": "password123",
             "full_name": "James Taylor",
             "bio": "Software developer with passion for mobile devices.",
         },
         {
             "email": "amanda.brown@example.com",
-            "username": "amandabrown",
+            "username": "Brown Amanda",
             "password": "password123",
             "full_name": "Amanda Brown",
             "bio": "Business professional focusing on productivity tools.",
         },
         {
             "email": "robert.lee@example.com",
-            "username": "robertlee",
+            "username": "Robert L33",
             "password": "password123",
             "full_name": "Robert Lee",
             "bio": "Tech journalist and industry analyst.",
         },
         {
             "email": "maria.gonzalez@example.com",
-            "username": "mariagonzalez",
+            "username": "Maria Gonza",
             "password": "password123",
             "full_name": "Maria Gonzalez",
             "bio": "Digital artist and creative professional.",
         },
         {
             "email": "kevin.kim@example.com",
-            "username": "kevinkim",
+            "username": "Kevin k1m",
             "password": "password123",
             "full_name": "Kevin Kim",
             "bio": "Student and casual tech user.",
         },
         {
             "email": "stephanie.davis@example.com",
-            "username": "stephaniedavis",
+            "username": "Stephanyyy",
             "password": "password123",
             "full_name": "Stephanie Davis",
             "bio": "UI/UX designer interested in device ergonomics.",
         },
         {
             "email": "alex.rodriguez@example.com",
-            "username": "alexrodriguez",
+            "username": "Rodri Alexious",
             "password": "password123",
             "full_name": "Alex Rodriguez",
             "bio": "IT consultant and enterprise technology expert.",
         },
         {
             "email": "jennifer.white@example.com",
-            "username": "jenniferwhite",
+            "username": "Jenniwhite",
             "password": "password123",
             "full_name": "Jennifer White",
             "bio": "Marketing professional and social media enthusiast.",
@@ -707,7 +707,7 @@ def init_db(db: Session) -> None:
         # iPhone 15 Pro reviews
         {
             "gadget_name": "iPhone 15 Pro",
-            "user_name": "johndoe",
+            "user_name": "John Doe",
             "title": "Amazing Camera Quality and Performance",
             "content": "The camera quality is mind-blowing! The new A17 Pro chip delivers incredible performance for everything from gaming to video editing. Battery life has significantly improved compared to previous models.",
             "rating": 5.0,
@@ -716,7 +716,7 @@ def init_db(db: Session) -> None:
         },
         {
             "gadget_name": "iPhone 15 Pro",
-            "user_name": "sarahsmith",
+            "user_name": "Sarah Smith",
             "title": "Great for Photography",
             "content": "As a photographer, I'm impressed with the camera capabilities. The Pro cameras produce stunning results in various lighting conditions.",
             "rating": 4.0,
@@ -727,7 +727,7 @@ def init_db(db: Session) -> None:
         # Samsung Galaxy S24 Ultra reviews
         {
             "gadget_name": "Samsung Galaxy S24 Ultra",
-            "user_name": "davidwilson",
+            "user_name": "David Wilson",
             "title": "S Pen Makes All the Difference",
             "content": "The S Pen integration is fantastic for productivity and note-taking. The display is absolutely gorgeous and the camera zoom capabilities are unmatched.",
             "rating": 5.0,
@@ -736,7 +736,7 @@ def init_db(db: Session) -> None:
         },
         {
             "gadget_name": "Samsung Galaxy S24 Ultra",
-            "user_name": "lisagarcia",
+            "user_name": "Lisa Garcia",
             "title": "Photography Powerhouse",
             "content": "The camera system is incredible, especially the telephoto lens. Perfect for professional photography needs.",
             "rating": 5.0,
@@ -747,7 +747,7 @@ def init_db(db: Session) -> None:
         # Google Pixel 8 Pro reviews
         {
             "gadget_name": "Google Pixel 8 Pro",
-            "user_name": "jamestaylor",
+            "user_name": "James Taylor",
             "title": "Pure Android Experience",
             "content": "Clean Android experience with incredible AI features. The computational photography is still the best in the business.",
             "rating": 4.0,
@@ -756,7 +756,7 @@ def init_db(db: Session) -> None:
         },
         {
             "gadget_name": "Google Pixel 8 Pro",
-            "user_name": "robertlee",
+            "user_name": "Robert Lee",
             "title": "AI Features Are Game Changing",
             "content": "Google's AI integration throughout the phone is impressive. Camera features like Magic Eraser and Real Tone work brilliantly.",
             "rating": 4.0,
@@ -767,7 +767,7 @@ def init_db(db: Session) -> None:
         # OnePlus 12 reviews
         {
             "gadget_name": "OnePlus 12",
-            "user_name": "kevinkim",
+            "user_name": "Kevin Kim",
             "title": "Great Value Flagship",
             "content": "Incredible performance at a competitive price. The fast charging is absolutely insane - 0 to 100% in under 30 minutes!",
             "rating": 4.0,
@@ -778,7 +778,7 @@ def init_db(db: Session) -> None:
         # MacBook Pro 16\" M3 reviews
         {
             "gadget_name": "MacBook Pro 16\" M3",
-            "user_name": "mariagonzalez",
+            "user_name": "Maria Gonzalez",
             "title": "Perfect for Creative Work",
             "content": "The M3 chip handles video editing, 3D rendering, and graphic design tasks effortlessly. The display is absolutely stunning for creative work.",
             "rating": 5.0,
@@ -787,7 +787,7 @@ def init_db(db: Session) -> None:
         },
         {
             "gadget_name": "MacBook Pro 16\" M3",
-            "user_name": "danielmartinez",
+            "user_name": "Daniel Martinez",
             "title": "Video Editing Beast",
             "content": "As a video editor, this machine handles 4K footage like butter. The battery life is impressive even under heavy workloads.",
             "rating": 5.0,
@@ -798,7 +798,7 @@ def init_db(db: Session) -> None:
         # Dell XPS 13 Plus reviews
         {
             "gadget_name": "Dell XPS 13 Plus",
-            "user_name": "amandabrown",
+            "user_name": "Brown Amanda",
             "title": "Great Business Laptop",
             "content": "Perfect for business use. The OLED display is gorgeous and the build quality is top-notch. Very portable for frequent travelers.",
             "rating": 4.0,
@@ -809,7 +809,7 @@ def init_db(db: Session) -> None:
         # Samsung Galaxy Book Pro reviews
         {
             "gadget_name": "Samsung Galaxy Book Pro",
-            "user_name": "mikejohnson",
+            "user_name": "Mike Johnson",
             "title": "Great Performance, Mediocre Speakers",
             "content": "Great performance for productivity tasks but the speakers could definitely be better. The AMOLED display is beautiful though.",
             "rating": 4.0,
@@ -820,7 +820,7 @@ def init_db(db: Session) -> None:
         # ASUS ROG Strix G16 reviews
         {
             "gadget_name": "ASUS ROG Strix G16",
-            "user_name": "davidwilson",
+            "user_name": "DavidWilsons ",
             "title": "Gaming Powerhouse",
             "content": "Handles all modern games at high settings without breaking a sweat. The cooling system works well even during extended gaming sessions.",
             "rating": 5.0,
@@ -831,7 +831,7 @@ def init_db(db: Session) -> None:
         # iPad Pro 12.9\" M2 reviews
         {
             "gadget_name": "iPad Pro 12.9\" M2",
-            "user_name": "emilychen",
+            "user_name": "Emily Chenny",
             "title": "Perfect for Digital Art",
             "content": "The M2 chip makes this tablet incredibly powerful. The Apple Pencil integration is flawless for digital art and note-taking.",
             "rating": 5.0,
@@ -840,7 +840,7 @@ def init_db(db: Session) -> None:
         },
         {
             "gadget_name": "iPad Pro 12.9\" M2",
-            "user_name": "stephaniedavis",
+            "user_name": "Stephanyyy",
             "title": "Great for Productivity",
             "content": "With the Magic Keyboard, this becomes a legitimate laptop replacement for many tasks. The display quality is unmatched.",
             "rating": 4.0,
@@ -851,7 +851,7 @@ def init_db(db: Session) -> None:
         # iPad Air 5th Gen reviews
         {
             "gadget_name": "iPad Air 5th Gen",
-            "user_name": "kevinkim",
+            "user_name": "Kevin k1m",
             "title": "Perfect for Students",
             "content": "Great balance of performance and price for students. Handles all my coursework and entertainment needs perfectly.",
             "rating": 4.0,
@@ -862,7 +862,7 @@ def init_db(db: Session) -> None:
         # Samsung Galaxy Tab S9 Ultra reviews
         {
             "gadget_name": "Samsung Galaxy Tab S9 Ultra",
-            "user_name": "alexrodriguez",
+            "user_name": "Rodri Alexious",
             "title": "Android Tablet Done Right",
             "content": "Finally, an Android tablet that can compete with iPads. The S Pen included is a nice touch and the display is enormous.",
             "rating": 4.0,
@@ -873,7 +873,7 @@ def init_db(db: Session) -> None:
         # Microsoft Surface Pro 9 reviews
         {
             "gadget_name": "Microsoft Surface Pro 9",
-            "user_name": "jenniferwhite",
+            "user_name": "Jenniwhite",
             "title": "True 2-in-1 Experience",
             "content": "The versatility of having both tablet and laptop functionality in one device is unmatched. Perfect for presentations and mobile work.",
             "rating": 4.0,
@@ -894,7 +894,7 @@ def init_db(db: Session) -> None:
 
         {
             "gadget_name": "iPhone 14",
-            "user_name": "sarahsmith",
+            "user_name": "Sarah Smith",
             "title": "Still a Great Phone",
             "content": "Even though it's not the latest, the iPhone 14 still delivers excellent performance and camera quality for most users.",
             "rating": 4.0,
@@ -904,7 +904,7 @@ def init_db(db: Session) -> None:
 
         {
             "gadget_name": "Samsung Galaxy A54",
-            "user_name": "kevinkim",
+            "user_name": "Kevin k1m",
             "title": "Excellent Mid-Range Option",
             "content": "Great phone for the price. Camera is surprisingly good and battery lasts all day with moderate to heavy use.",
             "rating": 4.0,
@@ -914,7 +914,7 @@ def init_db(db: Session) -> None:
 
         {
             "gadget_name": "Nothing Phone 2",
-            "user_name": "jamestaylor",
+            "user_name": "Jamestaylor",
             "title": "Unique and Functional",
             "content": "The Glyph interface is not just a gimmick - it's actually quite useful. Clean Android experience is refreshing.",
             "rating": 4.0,
@@ -924,7 +924,7 @@ def init_db(db: Session) -> None:
 
         {
             "gadget_name": "ASUS ROG Phone 8",
-            "user_name": "davidwilson",
+            "user_name": "DavidWilsons ",
             "title": "Ultimate Gaming Phone",
             "content": "If you're serious about mobile gaming, this is the phone to get. The cooling system and gaming features are unmatched.",
             "rating": 5.0,
@@ -934,7 +934,7 @@ def init_db(db: Session) -> None:
 
         {
             "gadget_name": "HP Spectre x360 14",
-            "user_name": "stephaniedavis",
+            "user_name": "Stephanyyy",
             "title": "Versatile 2-in-1",
             "content": "The 360-degree hinge is solid and the touchscreen is responsive. Great for both work and entertainment.",
             "rating": 4.0,
@@ -944,7 +944,7 @@ def init_db(db: Session) -> None:
 
         {
             "gadget_name": "Lenovo ThinkPad X1 Carbon",
-            "user_name": "alexrodriguez",
+            "user_name": "Rodri Alexious",
             "title": "Business Laptop Excellence",
             "content": "The legendary ThinkPad keyboard and build quality are still unmatched. Perfect for business professionals.",
             "rating": 5.0,
@@ -954,7 +954,7 @@ def init_db(db: Session) -> None:
 
         {
             "gadget_name": "Microsoft Surface Laptop 5",
-            "user_name": "amandabrown",
+            "user_name": "Brown Amanda",
             "title": "Premium Windows Experience",
             "content": "Beautiful design with the Alcantara finish. Great for productivity work and the display is crisp and colorful.",
             "rating": 4.0,
@@ -964,7 +964,7 @@ def init_db(db: Session) -> None:
 
         {
             "gadget_name": "Acer Swift 3 OLED",
-            "user_name": "kevinkim",
+            "user_name": "Kevin k1m",
             "title": "Great Value with OLED",
             "content": "Having an OLED display at this price point is incredible. Perfect for students and casual users.",
             "rating": 4.0,
@@ -974,7 +974,7 @@ def init_db(db: Session) -> None:
 
         {
             "gadget_name": "Lenovo Tab P12 Pro",
-            "user_name": "emilychen",
+            "user_name": "Emily Chenny",
             "title": "Good Android Tablet Alternative",
             "content": "The OLED display is beautiful and JBL speakers sound great. Good alternative to iPads for Android users.",
             "rating": 4.0,
@@ -984,7 +984,7 @@ def init_db(db: Session) -> None:
 
         {
             "gadget_name": "Amazon Fire Max 11",
-            "user_name": "jenniferwhite",
+            "user_name": "Jenniwhite",
             "title": "Budget Tablet Champion",
             "content": "For the price, you can't beat this tablet. Perfect for reading, streaming, and basic tasks. Great for kids too.",
             "rating": 3.0,
@@ -994,7 +994,7 @@ def init_db(db: Session) -> None:
 
         {
             "gadget_name": "Xiaomi Pad 6",
-            "user_name": "robertlee",
+            "user_name": "Robert L33",
             "title": "Flagship Performance at Mid-Range Price",
             "content": "Impressive performance and display quality for the price. Great for gaming and multimedia consumption.",
             "rating": 4.0,
@@ -1004,7 +1004,7 @@ def init_db(db: Session) -> None:
 
         {
             "gadget_name": "Sony Xperia 1 V",
-            "user_name": "mariagonzalez",
+            "user_name": "Maria Gonza",
             "title": "Content Creator's Dream",
             "content": "The professional camera controls and 4K display make this perfect for content creation. Video recording capabilities are exceptional.",
             "rating": 4.0,
@@ -1024,7 +1024,7 @@ def init_db(db: Session) -> None:
 
         {
             "gadget_name": "ASUS ZenBook 14",
-            "user_name": "stephaniedavis",
+            "user_name": "Stephanie Davis",
             "title": "Compact and Capable",
             "content": "The NumberPad 2.0 is actually quite useful. Great laptop for everyday computing needs with good portability.",
             "rating": 4.0,
@@ -1034,7 +1034,7 @@ def init_db(db: Session) -> None:
 
         {
             "gadget_name": "ASUS ROG Flow Z13",
-            "user_name": "davidwilson",
+            "user_name": "David Wilson",
             "title": "Gaming Tablet Innovation",
             "content": "Unique concept that actually works. Gaming performance is solid and the detachable keyboard is well-designed.",
             "rating": 4.0,
@@ -1044,7 +1044,7 @@ def init_db(db: Session) -> None:
 
         {
             "gadget_name": "Huawei MatePad Pro 12.6",
-            "user_name": "alexrodriguez",
+            "user_name": "Rodri Alexious",
             "title": "Impressive Despite Limitations",
             "content": "Great hardware and display, but the software limitations due to Google services make it challenging for some users.",
             "rating": 3.0,
@@ -1054,7 +1054,7 @@ def init_db(db: Session) -> None:
 
         {
             "gadget_name": "OPPO Pad Air",
-            "user_name": "jenniferwhite",
+            "user_name": "Jenniwhite",
             "title": "Stylish Budget Option",
             "content": "Nice design and decent performance for basic tablet tasks. Good for streaming and light productivity work.",
             "rating": 3.0,

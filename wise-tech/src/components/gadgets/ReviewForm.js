@@ -1,6 +1,6 @@
 /**
  * Komponen ReviewForm - Form untuk menulis review gadget
- * 
+ *
  * Fitur utama:
  * - Form rating (1-5 stars)
  * - Judul review
@@ -9,21 +9,23 @@
  * - Submit ke backend
  */
 
-import React, { useState, useEffect } from 'react';
-import { reviewAPI, authUtils, userAPI } from '../../utils/api';
+import React, { useState, useEffect } from "react";
+import { reviewAPI, authUtils, userAPI } from "../../utils/api";
+import Alert from "../common/Alert";
 
 const ReviewForm = ({ gadgetId, onReviewSubmitted }) => {
   const [formData, setFormData] = useState({
-    title: '',
-    content: '',
+    title: "",
+    content: "",
     rating: 5,
-    pros: '',
-    cons: ''
+    pros: "",
+    cons: "",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [userProfile, setUserProfile] = useState(null);
   const [profileLoading, setProfileLoading] = useState(true);
+  const [alert, setAlert] = useState({ show: false, type: "", message: "" });
 
   // Fetch user profile
   useEffect(() => {
@@ -37,8 +39,8 @@ const ReviewForm = ({ gadgetId, onReviewSubmitted }) => {
         const profile = await userAPI.getProfile();
         setUserProfile(profile);
       } catch (err) {
-        console.error('Failed to fetch user profile:', err);
-        setError('Failed to load user information');
+        console.error("Failed to fetch user profile:", err);
+        setError("Failed to load user information");
       } finally {
         setProfileLoading(false);
       }
@@ -49,29 +51,29 @@ const ReviewForm = ({ gadgetId, onReviewSubmitted }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleRatingChange = (rating) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      rating: rating
+      rating: rating,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!authUtils.isAuthenticated()) {
-      setError('Please login to write a review');
+      setError("Please login to write a review");
       return;
     }
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const reviewData = {
@@ -80,21 +82,21 @@ const ReviewForm = ({ gadgetId, onReviewSubmitted }) => {
         content: formData.content,
         rating: formData.rating,
         pros: formData.pros || null,
-        cons: formData.cons || null
+        cons: formData.cons || null,
       };
 
-      console.log('Submitting review:', reviewData);
+      console.log("Submitting review:", reviewData);
       const newReview = await reviewAPI.createReview(reviewData);
-      
-      console.log('✅ Review submitted successfully:', newReview);
-      
+
+      console.log("✅ Review submitted successfully:", newReview);
+
       // Reset form
       setFormData({
-        title: '',
-        content: '',
+        title: "",
+        content: "",
         rating: 5,
-        pros: '',
-        cons: ''
+        pros: "",
+        cons: "",
       });
 
       // Notify parent component
@@ -102,15 +104,32 @@ const ReviewForm = ({ gadgetId, onReviewSubmitted }) => {
         onReviewSubmitted(newReview);
       }
 
-      alert('Review submitted successfully!');
+      // Emit global event to notify admin dashboard of new review
+      console.log(
+        "📢 ReviewForm - Dispatching reviewSubmitted event with data:",
+        newReview
+      );
+      window.dispatchEvent(
+        new CustomEvent("reviewSubmitted", {
+          detail: { review: newReview },
+        })
+      );
+      console.log("✅ ReviewForm - Event dispatched successfully");
+
+      // Show success alert
+      setAlert({
+        show: true,
+        type: "success",
+        message: "Review submitted successfully!",
+      });
     } catch (err) {
-      console.error('❌ Error submitting review:', err);
-      
+      console.error("❌ Error submitting review:", err);
+
       // Handle specific error messages from backend
-      if (err.message.includes('403')) {
-        setError('Unable to submit review. Please try again.');
+      if (err.message.includes("403")) {
+        setError("Unable to submit review. Please try again.");
       } else {
-        setError('Failed to submit review. Please try again.');
+        setError("Failed to submit review. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -121,8 +140,8 @@ const ReviewForm = ({ gadgetId, onReviewSubmitted }) => {
     return (
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
         <p className="text-gray-600 mb-4">Please login to write a review</p>
-        <button 
-          onClick={() => window.location.href = '/login'} 
+        <button
+          onClick={() => (window.location.href = "/login")}
           className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
         >
           Login
@@ -142,7 +161,7 @@ const ReviewForm = ({ gadgetId, onReviewSubmitted }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 review-form">
       <h3 className="text-xl font-bold text-gray-900 mb-6">Write a Review</h3>
-      
+
       {error && (
         <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
           <p className="text-red-600 text-sm">{error}</p>
@@ -162,7 +181,7 @@ const ReviewForm = ({ gadgetId, onReviewSubmitted }) => {
                 type="button"
                 onClick={() => handleRatingChange(star)}
                 className={`text-2xl ${
-                  star <= formData.rating ? 'text-yellow-400' : 'text-gray-300'
+                  star <= formData.rating ? "text-yellow-400" : "text-gray-300"
                 } hover:text-yellow-400 transition-colors`}
               >
                 ★
@@ -176,7 +195,10 @@ const ReviewForm = ({ gadgetId, onReviewSubmitted }) => {
 
         {/* Title */}
         <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="title"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Review Title
           </label>
           <input
@@ -193,7 +215,10 @@ const ReviewForm = ({ gadgetId, onReviewSubmitted }) => {
 
         {/* Content */}
         <div>
-          <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="content"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Review Content
           </label>
           <textarea
@@ -210,7 +235,10 @@ const ReviewForm = ({ gadgetId, onReviewSubmitted }) => {
 
         {/* Pros */}
         <div>
-          <label htmlFor="pros" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="pros"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Pros (Optional)
           </label>
           <textarea
@@ -226,7 +254,10 @@ const ReviewForm = ({ gadgetId, onReviewSubmitted }) => {
 
         {/* Cons */}
         <div>
-          <label htmlFor="cons" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="cons"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Cons (Optional)
           </label>
           <textarea
@@ -246,23 +277,46 @@ const ReviewForm = ({ gadgetId, onReviewSubmitted }) => {
             type="submit"
             disabled={loading}
             className={`w-full py-3 px-4 border border-transparent rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors ${
-              loading ? 'opacity-50 cursor-not-allowed' : ''
+              loading ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
             {loading ? (
               <div className="flex items-center justify-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 Submitting...
               </div>
             ) : (
-              'Submit Review'
+              "Submit Review"
             )}
           </button>
         </div>
       </form>
+
+      <Alert
+        type={alert.type}
+        message={alert.message}
+        show={alert.show}
+        onClose={() => setAlert({ show: false, type: "", message: "" })}
+      />
     </div>
   );
 };
