@@ -19,7 +19,7 @@
  */
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { gadgetAPI, reviewAPI } from "../../utils/api";
+import { gadgetAPI, reviewAPI, authUtils } from "../../utils/api";
 import GadgetImage from "../gadgets/GadgetImage";
 
 const Home = () => {
@@ -34,6 +34,19 @@ const Home = () => {
     if (!photoPath) return null;
     if (photoPath.startsWith("http")) return photoPath; // Already full URL
     return `http://localhost:8000${photoPath}`; // Add API base URL
+  };
+
+  // Helper function to get display name (show "You" if it's current user's review)
+  const getDisplayName = (review) => {
+    const currentUser = authUtils.getUserInfo();
+    const currentUserId = currentUser?.id?.toString();
+    const reviewUserId = review.user_id?.toString();
+
+    if (currentUserId && reviewUserId && currentUserId === reviewUserId) {
+      return "You";
+    }
+
+    return review.user?.full_name || review.user_name || "Anonymous";
   };
 
   // Debug log
@@ -235,11 +248,11 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 text-white">
+      <section className="bg-gradient-to-r from-indigo-600 via-blue-700 to-indigo-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Discover Amazing <span className="text-yellow-400">Gadgets</span>
+              Discover Amazing <span className="text-amber-400">Gadgets</span>
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-blue-100">
               Find honest reviews and discover the perfect tech for your needs
@@ -247,7 +260,7 @@ const Home = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/search"
-                className="bg-yellow-400 text-blue-900 px-8 py-3 rounded-lg text-lg font-semibold hover:bg-yellow-300 transition-colors"
+                className="bg-amber-400 text-blue-900 px-8 py-3 rounded-lg text-lg font-semibold hover:bg-amber-500 transition-colors"
               >
                 Browse Gadgets
               </Link>
@@ -468,9 +481,7 @@ const Home = () => {
                     </div>
                     <div className="ml-3">
                       <p className="text-sm font-medium text-gray-900">
-                        {review.user?.full_name ||
-                          review.user_name ||
-                          "Anonymous"}
+                        {getDisplayName(review)}
                       </p>
                       <p className="text-sm text-gray-500">
                         {formatDate(review.created_at)}

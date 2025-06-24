@@ -28,25 +28,6 @@ def read_users(
     return crud.user.get_multi(db, skip=skip, limit=limit)
 
 
-@router.get("/admin/users/{id}", response_model=schemas.User)
-def read_user(
-    *,
-    db: Session = Depends(deps.get_db),
-    id: int,
-    current_user: models.User = Depends(deps.get_current_active_admin),
-) -> Any:
-    """
-    Get user by ID (admin only).
-    """
-    user = crud.user.get(db, id=id)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
-    return user
-
-
 @router.post("/admin/users", response_model=schemas.User)
 def create_user(
     *,
@@ -174,92 +155,6 @@ def delete_review(
     return {"message": "Review deleted successfully"}
 
 
-@router.put("/admin/reviews/{id}/approve", response_model=schemas.Review)
-def approve_review(
-    *,
-    db: Session = Depends(deps.get_db),
-    id: int,
-    current_user: models.User = Depends(deps.get_current_active_admin),
-) -> Any:
-    """
-    Approve a review (admin only).
-    
-    Note: This endpoint assumes we're adding a status field to reviews
-    in a future update. For now it's a placeholder.
-    """
-    review = crud.review.get(db, id=id)
-    if not review:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Review not found",
-        )
-        
-    # In a real implementation, we would update the review status here
-    # For now, we'll just return the review as is
-    review_dict = {
-        **review.__dict__,
-        "user_name": review.user.username,
-    }
-    
-    return schemas.Review(**review_dict)
-
-
-@router.put("/admin/reviews/{id}/reject", response_model=schemas.Review)
-def reject_review(
-    *,
-    db: Session = Depends(deps.get_db),
-    id: int,
-    current_user: models.User = Depends(deps.get_current_active_admin),
-) -> Any:
-    """
-    Reject a review (admin only).
-    
-    Note: This endpoint assumes we're adding a status field to reviews
-    in a future update. For now it's a placeholder.
-    """
-    review = crud.review.get(db, id=id)
-    if not review:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Review not found",
-        )
-        
-    # In a real implementation, we would update the review status here
-    # For now, we'll just return the review as is
-    review_dict = {
-        **review.__dict__,
-        "user_name": review.user.username,
-    }
-    
-    return schemas.Review(**review_dict)
-
-
-@router.get("/admin/reviews/{id}", response_model=schemas.Review)
-def get_review(
-    *,
-    db: Session = Depends(deps.get_db),
-    id: int,
-    current_user: models.User = Depends(deps.get_current_active_admin),
-) -> Any:
-    """
-    Get review by ID (admin only).
-    """
-    review = crud.review.get(db, id=id)
-    if not review:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Review not found",
-        )
-    
-    review_dict = {
-        **review.__dict__,
-        "user_name": review.user.username,
-        "gadget_name": review.gadget.name,
-    }
-    
-    return schemas.Review(**review_dict)
-
-
 @router.get("/admin/dashboard/stats")
 def get_dashboard_stats(
     *,
@@ -301,14 +196,47 @@ def get_all_reviews(
     """
     Get all reviews (admin only).
     """
-    reviews = crud.review.get_multi(db, skip=skip, limit=limit)
+    from sqlalchemy import desc
+    from sqlalchemy.orm import joinedload
     
-    # Add user_name to each review
+    # Get reviews with user and gadget data, sorted by creation date (newest first)
+    reviews = (
+        db.query(models.Review)
+        .options(joinedload(models.Review.user), joinedload(models.Review.gadget))
+        .order_by(desc(models.Review.created_at))
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+    
+    # Add user_name and format response consistently
     result = []
     for review in reviews:
         review_dict = {
-            **review.__dict__,
+            "id": review.id,
+            "title": review.title,
+            "content": review.content,
+            "rating": review.rating,
+            "pros": review.pros,
+            "cons": review.cons,
+            "user_id": review.user_id,
+            "gadget_id": review.gadget_id,
+            "status": getattr(review, 'status', 'approved'),
+            "created_at": review.created_at,
+            "updated_at": review.updated_at,
             "user_name": review.user.username,
+            "user": {
+                "id": review.user.id,
+                "username": review.user.username,
+                "full_name": getattr(review.user, 'full_name', None),
+                "profile_photo": getattr(review.user, 'profile_photo', None),
+            },
+            "gadget": {
+                "id": review.gadget.id,
+                "name": review.gadget.name,
+                "category": review.gadget.category,
+                "brand": review.gadget.brand,
+            }
         }
         result.append(schemas.Review(**review_dict))
     

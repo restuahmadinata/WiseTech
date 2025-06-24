@@ -40,44 +40,7 @@ def update_user_profile(
     return user
 
 
-@router.get("/users/{user_id}/activity", response_model=List[schemas.ReviewWithDetails])
-def read_user_activity(
-    user_id: int,
-    db: Session = Depends(deps.get_db),
-    skip: int = 0,
-    limit: int = 10,
-    current_user: models.User = Depends(deps.get_current_active_user),
-) -> Any:
-    """
-    Get user activity (reviews).
-    
-    Note: For privacy reasons, this endpoint only returns the current user's 
-    activity unless the current user is an admin.
-    """
-    if user_id != current_user.id and not current_user.is_admin:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough permissions",
-        )
-        
-    reviews = crud.review.get_reviews_by_user(
-        db, user_id=user_id, skip=skip, limit=limit
-    )
-    
-    # Convert to ReviewWithDetails schema
-    result = []
-    for review in reviews:
-        gadget = crud.gadget.get(db, id=review.gadget_id)
-        review_dict = {
-            **review.__dict__,
-            "user_name": review.user.username,
-            "gadget_name": gadget.name,
-            "gadget_brand": gadget.brand,
-            "gadget_category": gadget.category,
-        }
-        result.append(schemas.ReviewWithDetails(**review_dict))
-        
-    return result
+
 
 
 @router.get("/users/reviews", response_model=List[schemas.ReviewWithDetails])

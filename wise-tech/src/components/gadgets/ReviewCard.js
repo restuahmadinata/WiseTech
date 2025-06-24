@@ -15,8 +15,35 @@ import { authUtils } from "../../utils/api";
 
 const ReviewCard = ({ review, onEdit, onDelete, showActions = true }) => {
   const currentUser = authUtils.getUserInfo();
-  const isOwner = currentUser.id === review.user_id?.toString();
+
+  // More robust ID comparison - handle both string and number types
+  const currentUserId = currentUser?.id?.toString();
+  const reviewUserId = review?.user_id?.toString();
+
+  // Also check if current user's ID matches the review's user ID from user object
+  const reviewUserIdFromUserObj = review?.user?.id?.toString();
+
+  const isOwner =
+    currentUserId &&
+    ((reviewUserId && currentUserId === reviewUserId) ||
+      (reviewUserIdFromUserObj && currentUserId === reviewUserIdFromUserObj));
   const isAdmin = authUtils.isAdmin();
+
+  // Debug logging
+  console.log("🔍 ReviewCard Debug:", {
+    currentUserId,
+    reviewUserId,
+    reviewUserIdFromUserObj,
+    isOwner,
+    isAdmin,
+    showActions,
+    hasOnEdit: !!onEdit,
+    hasOnDelete: !!onDelete,
+    reviewTitle: review.title,
+    reviewId: review.id,
+    currentUserInfo: currentUser,
+    reviewUser: review.user,
+  });
 
   // Format date
   const formatDate = (dateString) => {
@@ -55,6 +82,19 @@ const ReviewCard = ({ review, onEdit, onDelete, showActions = true }) => {
       return review.user_name[0].toUpperCase();
     }
     return "U";
+  };
+
+  // Get display name for user (show "You" if it's current user's review)
+  const getDisplayName = () => {
+    if (isOwner) {
+      return "You";
+    }
+    return (
+      review.user?.full_name ||
+      review.user?.username ||
+      review.user_name ||
+      "Anonymous User"
+    );
   };
 
   // Render stars
@@ -155,10 +195,7 @@ const ReviewCard = ({ review, onEdit, onDelete, showActions = true }) => {
             {/* User Info */}
             <div className="flex-1">
               <h3 className="text-lg font-bold text-gray-900 mb-1">
-                {review.user?.full_name ||
-                  review.user?.username ||
-                  review.user_name ||
-                  "Anonymous User"}
+                {getDisplayName()}
               </h3>
               <p className="text-sm text-gray-500 mb-3">
                 Reviewed on {formatDate(review.created_at)}

@@ -20,6 +20,7 @@ import { gadgetAPI, reviewAPI, authUtils } from "../../utils/api";
 import ReviewForm from "./ReviewForm";
 import ReviewList from "./ReviewList";
 import GadgetImage from "./GadgetImage";
+import Alert from "../common/Alert";
 
 const GadgetDetail = () => {
   const { id } = useParams();
@@ -32,6 +33,18 @@ const GadgetDetail = () => {
   const [userReview, setUserReview] = useState({
     rating: 5,
     comment: "",
+  });
+  const [alert, setAlert] = useState({ show: false, type: "", message: "" });
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [reviewToDelete, setReviewToDelete] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [reviewToEdit, setReviewToEdit] = useState(null);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    content: "",
+    rating: 5,
+    pros: "",
+    cons: "",
   });
 
   useEffect(() => {
@@ -170,6 +183,125 @@ const GadgetDetail = () => {
     }
   };
 
+  // Helper functions for delete confirmation
+  const handleDeleteConfirmation = (review) => {
+    setReviewToDelete(review);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!reviewToDelete) return;
+
+    try {
+      await reviewAPI.deleteReview(reviewToDelete.id);
+      setReviews((prev) => prev.filter((r) => r.id !== reviewToDelete.id));
+      setAlert({
+        show: true,
+        type: "success",
+        message: "Review deleted successfully!",
+      });
+    } catch (error) {
+      console.error("Error deleting review:", error);
+      setAlert({
+        show: true,
+        type: "error",
+        message: "Failed to delete review. Please try again.",
+      });
+    } finally {
+      setShowDeleteModal(false);
+      setReviewToDelete(null);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
+    setReviewToDelete(null);
+  };
+
+  // Helper functions for edit review
+  const handleEditReview = (review) => {
+    setReviewToEdit(review);
+    setEditForm({
+      title: review.title || "",
+      content: review.content || "",
+      rating: review.rating || 5,
+      pros: review.pros || "",
+      cons: review.cons || "",
+    });
+    setShowEditModal(true);
+  };
+
+  const handleEditFormChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm({
+      ...editForm,
+      [name]: name === "rating" ? parseInt(value) : value,
+    });
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    if (!reviewToEdit) return;
+
+    try {
+      console.log("🔄 Saving review edit in GadgetDetail:", {
+        reviewId: reviewToEdit.id,
+        originalUser: reviewToEdit.user,
+        originalUserName: reviewToEdit.user_name,
+        formData: editForm,
+      });
+
+      const updatedReview = await reviewAPI.updateReview(
+        reviewToEdit.id,
+        editForm
+      );
+
+      console.log("✅ Review updated from API in GadgetDetail:", updatedReview);
+
+      setReviews((prev) =>
+        prev.map((r) => {
+          if (r.id === reviewToEdit.id) {
+            const updatedData = {
+              ...r,
+              ...updatedReview,
+              // Preserve original user data including photo
+              user: r.user || updatedReview.user,
+              user_name: r.user_name || updatedReview.user_name,
+            };
+            console.log("🔄 Updated review data in GadgetDetail:", updatedData);
+            return updatedData;
+          }
+          return r;
+        })
+      );
+      setAlert({
+        show: true,
+        type: "success",
+        message: "Review updated successfully!",
+      });
+      handleEditCancel();
+    } catch (error) {
+      console.error("Error updating review:", error);
+      setAlert({
+        show: true,
+        type: "error",
+        message: "Failed to update review. Please try again.",
+      });
+    }
+  };
+
+  const handleEditCancel = () => {
+    setShowEditModal(false);
+    setReviewToEdit(null);
+    setEditForm({
+      title: "",
+      content: "",
+      rating: 5,
+      pros: "",
+      cons: "",
+    });
+  };
+
   const handleReviewChange = (e) => {
     const { name, value } = e.target;
     setUserReview({
@@ -182,12 +314,20 @@ const GadgetDetail = () => {
     e.preventDefault();
 
     if (!authUtils.isAuthenticated()) {
-      alert("Please log in to submit a review.");
+      setAlert({
+        show: true,
+        type: "warning",
+        message: "Please log in to submit a review.",
+      });
       return;
     }
 
     if (!userReview.comment.trim()) {
-      alert("Please write a comment for your review.");
+      setAlert({
+        show: true,
+        type: "error",
+        message: "Please write a comment for your review.",
+      });
       return;
     }
 
@@ -214,10 +354,25 @@ const GadgetDetail = () => {
       // Refresh reviews
       fetchReviews();
 
-      alert("Review submitted successfully!");
+      // Emit global event to notify admin dashboard of new review
+      window.dispatchEvent(
+        new CustomEvent("reviewSubmitted", {
+          detail: { review: reviewData },
+        })
+      );
+
+      setAlert({
+        show: true,
+        type: "success",
+        message: "Review submitted successfully!",
+      });
     } catch (err) {
       console.error("Error submitting review:", err);
-      alert("Failed to submit review. Please try again.");
+      setAlert({
+        show: true,
+        type: "error",
+        message: "Failed to submit review. Please try again.",
+      });
     } finally {
       setSubmittingReview(false);
     }
@@ -477,29 +632,217 @@ const GadgetDetail = () => {
               loading={reviewsLoading}
               emptyMessage="No reviews yet. Be the first to review this gadget!"
               onEditReview={(review) => {
-                // TODO: Implement edit functionality
-                console.log("Edit review:", review);
+                handleEditReview(review);
               }}
-              onDeleteReview={async (review) => {
-                if (
-                  window.confirm("Are you sure you want to delete this review?")
-                ) {
-                  try {
-                    await reviewAPI.deleteReview(review.id);
-                    setReviews((prev) =>
-                      prev.filter((r) => r.id !== review.id)
-                    );
-                    alert("Review deleted successfully!");
-                  } catch (error) {
-                    console.error("Error deleting review:", error);
-                    alert("Failed to delete review. Please try again.");
-                  }
-                }
+              onDeleteReview={(review) => {
+                handleDeleteConfirmation(review);
               }}
             />
           </div>
         </div>
       </div>
+
+      {/* Delete Review Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+            <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
+              <svg
+                className="w-6 h-6 text-red-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.996-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">
+              Delete Review
+            </h3>
+            <p className="text-gray-600 text-center mb-6">
+              Are you sure you want to delete this review? This action cannot be
+              undone.
+            </p>
+            <div className="flex space-x-3">
+              <button
+                onClick={handleDeleteCancel}
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Review Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold text-gray-900">
+                  Edit Review
+                </h3>
+                <button
+                  onClick={handleEditCancel}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleEditSubmit}>
+                <div className="space-y-6">
+                  {/* Review Title */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Review Title
+                    </label>
+                    <input
+                      type="text"
+                      name="title"
+                      value={editForm.title}
+                      onChange={handleEditFormChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                      placeholder="Give your review a title..."
+                      required
+                    />
+                  </div>
+
+                  {/* Rating */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Rating
+                    </label>
+                    <div className="flex items-center space-x-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() =>
+                            setEditForm({ ...editForm, rating: star })
+                          }
+                          className={`h-8 w-8 transition-colors ${
+                            star <= editForm.rating
+                              ? "text-yellow-400 hover:text-yellow-500"
+                              : "text-gray-300 hover:text-gray-400"
+                          }`}
+                        >
+                          <svg fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        </button>
+                      ))}
+                      <span className="ml-2 text-sm text-gray-600">
+                        {editForm.rating}/5
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Review Content */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Review Content
+                    </label>
+                    <textarea
+                      name="content"
+                      value={editForm.content}
+                      onChange={handleEditFormChange}
+                      rows={6}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-vertical"
+                      placeholder="Share your detailed thoughts about this gadget..."
+                      required
+                    />
+                  </div>
+
+                  {/* Pros */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Pros (Optional)
+                    </label>
+                    <textarea
+                      name="pros"
+                      value={editForm.pros}
+                      onChange={handleEditFormChange}
+                      rows={3}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-vertical"
+                      placeholder="What did you like about this gadget?"
+                    />
+                  </div>
+
+                  {/* Cons */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Cons (Optional)
+                    </label>
+                    <textarea
+                      name="cons"
+                      value={editForm.cons}
+                      onChange={handleEditFormChange}
+                      rows={3}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-vertical"
+                      placeholder="What could be improved?"
+                    />
+                  </div>
+                </div>
+
+                {/* Modal Actions */}
+                <div className="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
+                  <button
+                    type="button"
+                    onClick={handleEditCancel}
+                    className="px-6 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={
+                      !editForm.title.trim() || !editForm.content.trim()
+                    }
+                    className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <Alert
+        type={alert.type}
+        message={alert.message}
+        show={alert.show}
+        onClose={() => setAlert({ show: false, type: "", message: "" })}
+      />
     </div>
   );
 };

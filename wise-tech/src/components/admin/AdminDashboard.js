@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { authUtils, adminAPI } from "../../utils/api";
+import Alert from "../common/Alert";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -17,13 +18,10 @@ const AdminDashboard = () => {
   const [reviews, setReviews] = useState([]);
   const [error, setError] = useState("");
   const [dataLoading, setDataLoading] = useState(false);
-
-  // Filters for reviews
-  const [reviewFilter, setReviewFilter] = useState("all");
+  const [alert, setAlert] = useState({ show: false, type: "", message: "" });
 
   // Modal state for viewing review details
   const [selectedReview, setSelectedReview] = useState(null);
-  const [showReviewModal, setShowReviewModal] = useState(false);
 
   // Modal state for editing user details
   const [selectedUser, setSelectedUser] = useState(null);
@@ -81,6 +79,33 @@ const AdminDashboard = () => {
   // Logout confirmation state
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
+  // Delete confirmation state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteModalData, setDeleteModalData] = useState({
+    type: "", // 'user', 'review', 'gadget'
+    id: null,
+    title: "",
+    message: "",
+    onConfirm: null,
+  });
+
+  // Search and filter states
+  const [userSearch, setUserSearch] = useState("");
+  const [userFilter, setUserFilter] = useState("all"); // all, admin, regular
+  const [userSort, setUserSort] = useState("full_name"); // name, email, created_at, role
+  const [userSortOrder, setUserSortOrder] = useState("asc"); // asc, desc
+
+  const [gadgetSearch, setGadgetSearch] = useState("");
+  const [gadgetFilter, setGadgetFilter] = useState("all"); // all, smartphones, laptops, tablets, wearables, audio, gaming
+  const [gadgetSort, setGadgetSort] = useState("name"); // name, brand, category, price, created_at
+  const [gadgetSortOrder, setGadgetSortOrder] = useState("asc"); // asc, desc
+
+  const [reviewSearch, setReviewSearch] = useState("");
+  const [reviewFilter, setReviewFilter] = useState("all"); // all, 5, 4, 3, 2, 1 (by rating)
+  const [reviewDateFilter, setReviewDateFilter] = useState("all"); // all, today, week, month, year
+  const [reviewSort, setReviewSort] = useState("created_at"); // title, user_name, gadget_name, rating, created_at
+  const [reviewSortOrder, setReviewSortOrder] = useState("desc"); // asc, desc
+
   // Calculate stats dynamically from current data
   const calculateStats = () => {
     const totalGadgets = gadgets.length;
@@ -92,6 +117,279 @@ const AdminDashboard = () => {
       totalUsers,
       totalReviews,
     };
+  };
+
+  // Helper function to sort array by field
+  const sortData = (data, sortField, sortOrder) => {
+    return [...data].sort((a, b) => {
+      let aValue = a[sortField];
+      let bValue = b[sortField];
+
+      // Handle nested object properties (e.g., user.username)
+      if (sortField.includes(".")) {
+        const fields = sortField.split(".");
+        aValue = fields.reduce((obj, field) => obj?.[field], a);
+        bValue = fields.reduce((obj, field) => obj?.[field], b);
+      }
+
+      // Handle null/undefined values
+      if (!aValue && !bValue) return 0;
+      if (!aValue) return sortOrder === "asc" ? -1 : 1;
+      if (!bValue) return sortOrder === "asc" ? 1 : -1;
+
+      // Handle different data types
+      if (typeof aValue === "string" && typeof bValue === "string") {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+
+      if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+  };
+
+  // Handle sort column click
+  const handleSort = (section, field) => {
+    if (section === "users") {
+      if (userSort === field) {
+        setUserSortOrder(userSortOrder === "asc" ? "desc" : "asc");
+      } else {
+        setUserSort(field);
+        setUserSortOrder("asc");
+      }
+    } else if (section === "gadgets") {
+      if (gadgetSort === field) {
+        setGadgetSortOrder(gadgetSortOrder === "asc" ? "desc" : "asc");
+      } else {
+        setGadgetSort(field);
+        setGadgetSortOrder("asc");
+      }
+    } else if (section === "reviews") {
+      if (reviewSort === field) {
+        setReviewSortOrder(reviewSortOrder === "asc" ? "desc" : "asc");
+      } else {
+        setReviewSort(field);
+        setReviewSortOrder("asc");
+      }
+    }
+  };
+
+  // Helper function to render sort icon
+  const renderSortIcon = (section, field) => {
+    let currentSort, currentOrder;
+
+    if (section === "users") {
+      currentSort = userSort;
+      currentOrder = userSortOrder;
+    } else if (section === "gadgets") {
+      currentSort = gadgetSort;
+      currentOrder = gadgetSortOrder;
+    } else if (section === "reviews") {
+      currentSort = reviewSort;
+      currentOrder = reviewSortOrder;
+    }
+
+    if (currentSort !== field) {
+      return (
+        <svg
+          className="h-4 w-4 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M8 9l4-4 4 4m0 6l-4 4-4-4"
+          />
+        </svg>
+      );
+    }
+
+    return currentOrder === "asc" ? (
+      <svg
+        className="h-4 w-4 text-indigo-600"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M5 15l7-7 7 7"
+        />
+      </svg>
+    ) : (
+      <svg
+        className="h-4 w-4 text-indigo-600"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M19 9l-7 7-7-7"
+        />
+      </svg>
+    );
+  };
+
+  // Filter and search functions
+  const filteredUsers = (() => {
+    const filtered = users.filter((user) => {
+      const matchesSearch =
+        userSearch === "" ||
+        user.username?.toLowerCase().includes(userSearch.toLowerCase()) ||
+        user.full_name?.toLowerCase().includes(userSearch.toLowerCase()) ||
+        user.email?.toLowerCase().includes(userSearch.toLowerCase());
+
+      const matchesFilter =
+        userFilter === "all" ||
+        (userFilter === "admin" && user.is_admin) ||
+        (userFilter === "regular" && !user.is_admin);
+
+      return matchesSearch && matchesFilter;
+    });
+
+    return sortData(
+      filtered,
+      userSort === "role" ? "is_admin" : userSort,
+      userSortOrder
+    );
+  })();
+
+  const filteredGadgets = (() => {
+    const filtered = gadgets.filter((gadget) => {
+      const matchesSearch =
+        gadgetSearch === "" ||
+        gadget.name?.toLowerCase().includes(gadgetSearch.toLowerCase()) ||
+        gadget.brand?.toLowerCase().includes(gadgetSearch.toLowerCase()) ||
+        gadget.description?.toLowerCase().includes(gadgetSearch.toLowerCase());
+
+      const matchesFilter =
+        gadgetFilter === "all" ||
+        gadget.category?.toLowerCase() === gadgetFilter.toLowerCase();
+
+      return matchesSearch && matchesFilter;
+    });
+
+    return sortData(filtered, gadgetSort, gadgetSortOrder);
+  })();
+
+  const filteredReviews = (() => {
+    const filtered = reviews.filter((review) => {
+      const matchesSearch =
+        reviewSearch === "" ||
+        review.title?.toLowerCase().includes(reviewSearch.toLowerCase()) ||
+        review.content?.toLowerCase().includes(reviewSearch.toLowerCase()) ||
+        review.user_name?.toLowerCase().includes(reviewSearch.toLowerCase()) ||
+        review.gadget?.name?.toLowerCase().includes(reviewSearch.toLowerCase());
+
+      const matchesRating =
+        reviewFilter === "all" || review.rating === parseInt(reviewFilter);
+
+      // Date filter
+      const matchesDate =
+        reviewDateFilter === "all" ||
+        (() => {
+          if (!review.created_at) return true;
+
+          const reviewDate = new Date(review.created_at);
+          const now = new Date();
+          const today = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate()
+          );
+
+          switch (reviewDateFilter) {
+            case "today":
+              return reviewDate >= today;
+            case "week":
+              const weekAgo = new Date(today);
+              weekAgo.setDate(weekAgo.getDate() - 7);
+              return reviewDate >= weekAgo;
+            case "month":
+              const monthAgo = new Date(today);
+              monthAgo.setMonth(monthAgo.getMonth() - 1);
+              return reviewDate >= monthAgo;
+            case "year":
+              const yearAgo = new Date(today);
+              yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+              return reviewDate >= yearAgo;
+            default:
+              return true;
+          }
+        })();
+
+      return matchesSearch && matchesRating && matchesDate;
+    });
+
+    // Use user_name for sorting if sort field is user_name
+    const sortField =
+      reviewSort === "user_name"
+        ? "user_name"
+        : reviewSort === "gadget_name"
+        ? "gadget.name"
+        : reviewSort;
+    return sortData(filtered, sortField, reviewSortOrder);
+  })();
+
+  // Clear search and filters
+  const clearUserFilters = () => {
+    setUserSearch("");
+    setUserFilter("all");
+    setUserSort("name");
+    setUserSortOrder("asc");
+  };
+
+  const clearGadgetFilters = () => {
+    setGadgetSearch("");
+    setGadgetFilter("all");
+    setGadgetSort("name");
+    setGadgetSortOrder("asc");
+  };
+
+  const clearReviewFilters = () => {
+    setReviewSearch("");
+    setReviewFilter("all");
+    setReviewDateFilter("all");
+    setReviewSort("created_at");
+    setReviewSortOrder("desc");
+  };
+
+  // Helper function to show success alerts
+  const showSuccessAlert = (message) => {
+    setAlert({ show: true, type: "success", message });
+  };
+
+  // Helper function to show error alerts
+  const showErrorAlert = (message) => {
+    setAlert({ show: true, type: "error", message });
+  };
+
+  // Helper function to show delete confirmation modal
+  const showDeleteConfirmation = (type, id, title, message, onConfirm) => {
+    setDeleteModalData({ type, id, title, message, onConfirm });
+    setShowDeleteModal(true);
+  };
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = () => {
+    if (deleteModalData.onConfirm) {
+      deleteModalData.onConfirm();
+    }
+    setShowDeleteModal(false);
+  };
+
+  // Handle delete cancel
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
   };
 
   // API Functions
@@ -131,10 +429,29 @@ const AdminDashboard = () => {
   const fetchReviews = async () => {
     try {
       setDataLoading(true);
+      console.log("🔄 AdminDashboard - Fetching reviews...");
+
       const data = await adminAPI.getReviews({ pageSize: 50 });
-      setReviews(data.reviews || data || []);
+      const reviewsData = data.reviews || data || [];
+
+      console.log(
+        "✅ AdminDashboard - Reviews fetched:",
+        reviewsData.length,
+        "reviews"
+      );
+      console.log("📋 AdminDashboard - Review data:", reviewsData);
+
+      // Sort reviews by creation date (newest first) - basic sort for initial load
+      const sortedReviews = [...reviewsData].sort((a, b) => {
+        const dateA = new Date(a.created_at || a.date || 0);
+        const dateB = new Date(b.created_at || b.date || 0);
+        return dateB - dateA; // Newest first
+      });
+      setReviews(sortedReviews);
+
+      console.log("✅ AdminDashboard - Reviews sorted and set to state");
     } catch (error) {
-      console.error("Error fetching reviews:", error);
+      console.error("❌ AdminDashboard - Error fetching reviews:", error);
       setError("Failed to load reviews");
       setReviews([]);
     } finally {
@@ -154,15 +471,6 @@ const AdminDashboard = () => {
     } finally {
       setDataLoading(false);
     }
-  };
-
-  const fetchAllData = async () => {
-    await Promise.all([
-      fetchDashboardStats(),
-      fetchUsers(),
-      fetchReviews(),
-      fetchGadgets(),
-    ]);
   };
 
   // User CRUD handlers
@@ -194,14 +502,16 @@ const AdminDashboard = () => {
       const response = await adminAPI.createUser(addUserForm);
       setUsers([...users, response]);
       setShowAddUserModal(false);
-      console.log("✅ User created successfully");
+      showSuccessAlert("User created successfully!");
 
       // Refresh stats
       const calculatedStats = calculateStats();
       setStats(calculatedStats);
     } catch (error) {
       console.error("❌ Error creating user:", error);
-      setError("Failed to create user: " + (error.message || "Unknown error"));
+      showErrorAlert(
+        "Failed to create user: " + (error.message || "Unknown error")
+      );
     } finally {
       setDataLoading(false);
     }
@@ -215,39 +525,45 @@ const AdminDashboard = () => {
         users.map((user) => (user.id === selectedUser.id ? response : user))
       );
       setShowUserModal(false);
-      console.log("✅ User updated successfully");
+      showSuccessAlert("User updated successfully!");
     } catch (error) {
       console.error("❌ Error updating user:", error);
-      setError("Failed to update user: " + (error.message || "Unknown error"));
+      showErrorAlert(
+        "Failed to update user: " + (error.message || "Unknown error")
+      );
     } finally {
       setDataLoading(false);
     }
   };
 
   const handleDeleteUser = async (userId) => {
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this user? This action cannot be undone."
-      )
-    ) {
-      return;
-    }
+    const performDelete = async () => {
+      try {
+        setDataLoading(true);
+        await adminAPI.deleteUser(userId);
+        setUsers(users.filter((user) => user.id !== userId));
+        showSuccessAlert("User deleted successfully!");
 
-    try {
-      setDataLoading(true);
-      await adminAPI.deleteUser(userId);
-      setUsers(users.filter((user) => user.id !== userId));
-      console.log("✅ User deleted successfully");
+        // Refresh stats
+        const calculatedStats = calculateStats();
+        setStats(calculatedStats);
+      } catch (error) {
+        console.error("❌ Error deleting user:", error);
+        showErrorAlert(
+          "Failed to delete user: " + (error.message || "Unknown error")
+        );
+      } finally {
+        setDataLoading(false);
+      }
+    };
 
-      // Refresh stats
-      const calculatedStats = calculateStats();
-      setStats(calculatedStats);
-    } catch (error) {
-      console.error("❌ Error deleting user:", error);
-      setError("Failed to delete user: " + (error.message || "Unknown error"));
-    } finally {
-      setDataLoading(false);
-    }
+    showDeleteConfirmation(
+      "user",
+      userId,
+      "Delete User",
+      "Are you sure you want to delete this user? This action cannot be undone.",
+      performDelete
+    );
   };
 
   // Review CRUD handlers
@@ -270,16 +586,18 @@ const AdminDashboard = () => {
         selectedReview.id,
         editReviewForm
       );
-      setReviews(
-        reviews.map((review) =>
-          review.id === selectedReview.id ? response : review
-        )
+
+      // Update the review in the list
+      const updatedReviews = reviews.map((review) =>
+        review.id === selectedReview.id ? response : review
       );
+
+      setReviews(updatedReviews);
       setShowEditReviewModal(false);
-      console.log("✅ Review updated successfully");
+      showSuccessAlert("Review updated successfully!");
     } catch (error) {
       console.error("❌ Error updating review:", error);
-      setError(
+      showErrorAlert(
         "Failed to update review: " + (error.message || "Unknown error")
       );
     } finally {
@@ -288,31 +606,35 @@ const AdminDashboard = () => {
   };
 
   const handleDeleteReview = async (reviewId) => {
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this review? This action cannot be undone."
-      )
-    ) {
-      return;
-    }
+    const performDelete = async () => {
+      try {
+        setDataLoading(true);
+        await adminAPI.deleteReview(reviewId);
 
-    try {
-      setDataLoading(true);
-      await adminAPI.deleteReview(reviewId);
-      setReviews(reviews.filter((review) => review.id !== reviewId));
-      console.log("✅ Review deleted successfully");
+        // Filter out the deleted review (sorting is maintained as it's a filter operation)
+        setReviews(reviews.filter((review) => review.id !== reviewId));
+        showSuccessAlert("Review deleted successfully!");
 
-      // Refresh stats
-      const calculatedStats = calculateStats();
-      setStats(calculatedStats);
-    } catch (error) {
-      console.error("❌ Error deleting review:", error);
-      setError(
-        "Failed to delete review: " + (error.message || "Unknown error")
-      );
-    } finally {
-      setDataLoading(false);
-    }
+        // Refresh stats
+        const calculatedStats = calculateStats();
+        setStats(calculatedStats);
+      } catch (error) {
+        console.error("❌ Error deleting review:", error);
+        showErrorAlert(
+          "Failed to delete review: " + (error.message || "Unknown error")
+        );
+      } finally {
+        setDataLoading(false);
+      }
+    };
+
+    showDeleteConfirmation(
+      "review",
+      reviewId,
+      "Delete Review",
+      "Are you sure you want to delete this review? This action cannot be undone.",
+      performDelete
+    );
   };
 
   // Gadget CRUD handlers
@@ -374,14 +696,14 @@ const AdminDashboard = () => {
       const response = await adminAPI.createGadget(gadgetData);
       setGadgets([...gadgets, response]);
       setShowAddGadgetModal(false);
-      console.log("✅ Gadget created successfully");
+      showSuccessAlert("Gadget created successfully!");
 
       // Refresh stats
       const calculatedStats = calculateStats();
       setStats(calculatedStats);
     } catch (error) {
       console.error("❌ Error creating gadget:", error);
-      setError(
+      showErrorAlert(
         "Failed to create gadget: " + (error.message || "Unknown error")
       );
     } finally {
@@ -424,10 +746,10 @@ const AdminDashboard = () => {
         )
       );
       setShowGadgetModal(false);
-      console.log("✅ Gadget updated successfully");
+      showSuccessAlert("Gadget updated successfully!");
     } catch (error) {
       console.error("❌ Error updating gadget:", error);
-      setError(
+      showErrorAlert(
         "Failed to update gadget: " + (error.message || "Unknown error")
       );
     } finally {
@@ -436,31 +758,33 @@ const AdminDashboard = () => {
   };
 
   const handleDeleteGadget = async (gadgetId) => {
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this gadget? This action cannot be undone and will also delete all associated reviews."
-      )
-    ) {
-      return;
-    }
+    const performDelete = async () => {
+      try {
+        setDataLoading(true);
+        await adminAPI.deleteGadget(gadgetId);
+        setGadgets(gadgets.filter((gadget) => gadget.id !== gadgetId));
+        showSuccessAlert("Gadget deleted successfully!");
 
-    try {
-      setDataLoading(true);
-      await adminAPI.deleteGadget(gadgetId);
-      setGadgets(gadgets.filter((gadget) => gadget.id !== gadgetId));
-      console.log("✅ Gadget deleted successfully");
+        // Refresh stats
+        const calculatedStats = calculateStats();
+        setStats(calculatedStats);
+      } catch (error) {
+        console.error("❌ Error deleting gadget:", error);
+        showErrorAlert(
+          "Failed to delete gadget: " + (error.message || "Unknown error")
+        );
+      } finally {
+        setDataLoading(false);
+      }
+    };
 
-      // Refresh stats
-      const calculatedStats = calculateStats();
-      setStats(calculatedStats);
-    } catch (error) {
-      console.error("❌ Error deleting gadget:", error);
-      setError(
-        "Failed to delete gadget: " + (error.message || "Unknown error")
-      );
-    } finally {
-      setDataLoading(false);
-    }
+    showDeleteConfirmation(
+      "gadget",
+      gadgetId,
+      "Delete Gadget",
+      "Are you sure you want to delete this gadget? This action cannot be undone and will also delete all associated reviews.",
+      performDelete
+    );
   };
 
   // Modal handlers
@@ -544,6 +868,15 @@ const AdminDashboard = () => {
 
   // Check if user is admin and fetch data
   useEffect(() => {
+    const fetchAllData = async () => {
+      await Promise.all([
+        fetchDashboardStats(),
+        fetchUsers(),
+        fetchReviews(),
+        fetchGadgets(),
+      ]);
+    };
+
     const checkAdminAccess = async () => {
       try {
         setIsLoading(true);
@@ -594,6 +927,64 @@ const AdminDashboard = () => {
 
     checkAdminAccess();
   }, []);
+
+  // Listen for new reviews being submitted to refresh the review list
+  useEffect(() => {
+    const handleNewReview = async (event) => {
+      console.log("🔄 AdminDashboard - New review submitted event received");
+      console.log("📋 AdminDashboard - Event detail:", event.detail);
+
+      try {
+        // If event contains the new review data, add it directly to state as fallback
+        if (event.detail && event.detail.review) {
+          const newReview = event.detail.review;
+          console.log(
+            "📝 AdminDashboard - Adding new review to state:",
+            newReview
+          );
+
+          // Add the new review to the beginning of the list (newest first)
+          setReviews((prevReviews) => {
+            // Check if review already exists to prevent duplicates
+            const exists = prevReviews.some((r) => r.id === newReview.id);
+            if (exists) {
+              console.log(
+                "⚠️ AdminDashboard - Review already exists, skipping"
+              );
+              return prevReviews;
+            }
+
+            return [newReview, ...prevReviews];
+          });
+        }
+
+        // Refresh reviews from backend to ensure consistency
+        console.log(
+          "🔄 AdminDashboard - Refreshing review list from backend..."
+        );
+        await fetchReviews();
+
+        // Also refresh stats since total review count might have changed
+        const updatedStats = calculateStats();
+        setStats(updatedStats);
+
+        console.log("✅ AdminDashboard - Review list refreshed successfully");
+      } catch (error) {
+        console.error(
+          "❌ AdminDashboard - Failed to refresh review list:",
+          error
+        );
+      }
+    };
+
+    // Listen for review submission events
+    window.addEventListener("reviewSubmitted", handleNewReview);
+
+    // Cleanup listener on component unmount
+    return () => {
+      window.removeEventListener("reviewSubmitted", handleNewReview);
+    };
+  }, [fetchReviews, calculateStats]);
 
   // Show loading while checking authorization
   if (isLoading) {
@@ -721,119 +1112,121 @@ const AdminDashboard = () => {
               </div>
 
               {/* Stats Cards */}
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                {/* Total Users Card */}
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="p-6">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0">
-                        <div className="bg-blue-500 rounded-lg p-3">
-                          <svg
-                            className="h-8 w-8 text-white"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
-                            />
-                          </svg>
+              <div className="flex justify-center">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl">
+                  {/* Total Users Card */}
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                    <div className="p-6">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                          <div className="bg-blue-500 rounded-lg p-4">
+                            <svg
+                              className="h-8 w-8 text-white"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                              />
+                            </svg>
+                          </div>
                         </div>
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-medium text-blue-600 truncate">
-                            Total Users
-                          </dt>
-                          <dd className="text-3xl font-bold text-blue-800">
-                            {stats.totalUsers || 0}
-                          </dd>
-                          <dt className="text-xs text-blue-500 mt-1">
-                            Active members
-                          </dt>
-                        </dl>
+                        <div className="ml-6 flex-1">
+                          <dl>
+                            <dt className="text-sm font-semibold text-blue-600 truncate">
+                              Total Users
+                            </dt>
+                            <dd className="text-2xl font-bold text-blue-800 mt-1">
+                              {stats.totalUsers || 0}
+                            </dd>
+                            <dt className="text-xs text-blue-500 mt-1">
+                              Active members
+                            </dt>
+                          </dl>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Total Reviews Card */}
-                <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="p-6">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0">
-                        <div className="bg-green-500 rounded-lg p-3">
-                          <svg
-                            className="h-8 w-8 text-white"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
-                            />
-                          </svg>
+                  {/* Total Reviews Card */}
+                  <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                    <div className="p-6">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                          <div className="bg-green-500 rounded-lg p-4">
+                            <svg
+                              className="h-8 w-8 text-white"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+                              />
+                            </svg>
+                          </div>
                         </div>
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-medium text-green-600 truncate">
-                            Total Reviews
-                          </dt>
-                          <dd className="text-3xl font-bold text-green-800">
-                            {stats.totalReviews || 0}
-                          </dd>
-                          <dt className="text-xs text-green-500 mt-1">
-                            User feedback
-                          </dt>
-                        </dl>
+                        <div className="ml-6 flex-1">
+                          <dl>
+                            <dt className="text-sm font-semibold text-green-600 truncate">
+                              Total Reviews
+                            </dt>
+                            <dd className="text-2xl font-bold text-green-800 mt-1">
+                              {stats.totalReviews || 0}
+                            </dd>
+                            <dt className="text-xs text-green-500 mt-1">
+                              User feedback
+                            </dt>
+                          </dl>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Total Gadgets Card */}
-                <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="p-6">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0">
-                        <div className="bg-purple-500 rounded-lg p-3">
-                          <svg
-                            className="h-8 w-8 text-white"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
-                            />
-                          </svg>
+                  {/* Total Gadgets Card */}
+                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                    <div className="p-6">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                          <div className="bg-purple-500 rounded-lg p-4">
+                            <svg
+                              className="h-8 w-8 text-white"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
+                              />
+                            </svg>
+                          </div>
                         </div>
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-medium text-purple-600 truncate">
-                            Total Gadgets
-                          </dt>
-                          <dd className="text-3xl font-bold text-purple-800">
-                            {stats.totalGadgets || 0}
-                          </dd>
-                          <dt className="text-xs text-purple-500 mt-1">
-                            Available products
-                          </dt>
-                        </dl>
+                        <div className="ml-6 flex-1">
+                          <dl>
+                            <dt className="text-sm font-semibold text-purple-600 truncate">
+                              Total Gadgets
+                            </dt>
+                            <dd className="text-2xl font-bold text-purple-800 mt-1">
+                              {stats.totalGadgets || 0}
+                            </dd>
+                            <dt className="text-xs text-purple-500 mt-1">
+                              Available products
+                            </dt>
+                          </dl>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1083,6 +1476,63 @@ const AdminDashboard = () => {
                     </button>
                   </div>
                 </div>
+
+                {/* Search and Filter Controls */}
+                <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg
+                        className="h-5 w-5 text-gray-400"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
+                      </svg>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Search users..."
+                      value={userSearch}
+                      onChange={(e) => setUserSearch(e.target.value)}
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <select
+                      value={userFilter}
+                      onChange={(e) => setUserFilter(e.target.value)}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    >
+                      <option value="all">All Users</option>
+                      <option value="admin">Admins</option>
+                      <option value="regular">Regular Users</option>
+                    </select>
+                  </div>
+
+                  {/* Results Count */}
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="text-sm text-gray-500">
+                      {filteredUsers.length} of {users.length} users
+                    </span>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <button
+                      onClick={clearUserFilters}
+                      className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                      Clear Filters
+                    </button>
+                  </div>
+                </div>
                 <div className="mt-8 flex flex-col">
                   <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
                     <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
@@ -1092,27 +1542,45 @@ const AdminDashboard = () => {
                             <tr>
                               <th
                                 scope="col"
-                                className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
+                                className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 cursor-pointer hover:bg-gray-100"
+                                onClick={() => handleSort("users", "full_name")}
                               >
-                                Name
+                                <div className="flex items-center space-x-1">
+                                  <span>Name & Username</span>
+                                  {renderSortIcon("users", "full_name")}
+                                </div>
                               </th>
                               <th
                                 scope="col"
-                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                                onClick={() => handleSort("users", "email")}
                               >
-                                Email
+                                <div className="flex items-center space-x-1">
+                                  <span>Email</span>
+                                  {renderSortIcon("users", "email")}
+                                </div>
                               </th>
                               <th
                                 scope="col"
-                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                                onClick={() => handleSort("users", "role")}
                               >
-                                Role
+                                <div className="flex items-center space-x-1">
+                                  <span>Role</span>
+                                  {renderSortIcon("users", "role")}
+                                </div>
                               </th>
                               <th
                                 scope="col"
-                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                                onClick={() =>
+                                  handleSort("users", "created_at")
+                                }
                               >
-                                Joined
+                                <div className="flex items-center space-x-1">
+                                  <span>Joined</span>
+                                  {renderSortIcon("users", "created_at")}
+                                </div>
                               </th>
                               <th
                                 scope="col"
@@ -1123,10 +1591,19 @@ const AdminDashboard = () => {
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-gray-200 bg-white">
-                            {users.map((user) => (
+                            {filteredUsers.map((user) => (
                               <tr key={user.id}>
                                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                                  {user.full_name || user.username}
+                                  <div className="flex flex-col">
+                                    <span className="font-medium">
+                                      {user.full_name || user.username || "N/A"}
+                                    </span>
+                                    {user.full_name && user.username && (
+                                      <span className="text-sm text-gray-500">
+                                        {user.username}
+                                      </span>
+                                    )}
+                                  </div>
                                 </td>
                                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                   {user.email}
@@ -1199,6 +1676,67 @@ const AdminDashboard = () => {
                     </button>
                   </div>
                 </div>
+
+                {/* Search and Filter Controls */}
+                <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg
+                        className="h-5 w-5 text-gray-400"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
+                      </svg>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Search gadgets..."
+                      value={gadgetSearch}
+                      onChange={(e) => setGadgetSearch(e.target.value)}
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <select
+                      value={gadgetFilter}
+                      onChange={(e) => setGadgetFilter(e.target.value)}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    >
+                      <option value="all">All Categories</option>
+                      <option value="smartphones">Smartphones</option>
+                      <option value="laptops">Laptops</option>
+                      <option value="tablets">Tablets</option>
+                      <option value="wearables">Wearables</option>
+                      <option value="audio">Audio</option>
+                      <option value="gaming">Gaming</option>
+                    </select>
+                  </div>
+
+                  {/* Results Count */}
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="text-sm text-gray-500">
+                      {filteredGadgets.length} of {gadgets.length} gadgets
+                    </span>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <button
+                      onClick={clearGadgetFilters}
+                      className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                      Clear Filters
+                    </button>
+                  </div>
+                </div>
                 <div className="mt-8 flex flex-col">
                   <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
                     <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
@@ -1208,33 +1746,57 @@ const AdminDashboard = () => {
                             <tr>
                               <th
                                 scope="col"
-                                className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
+                                className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 cursor-pointer hover:bg-gray-100"
+                                onClick={() => handleSort("gadgets", "name")}
                               >
-                                Name
+                                <div className="flex items-center space-x-1">
+                                  <span>Name</span>
+                                  {renderSortIcon("gadgets", "name")}
+                                </div>
                               </th>
                               <th
                                 scope="col"
-                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                                onClick={() =>
+                                  handleSort("gadgets", "category")
+                                }
                               >
-                                Category
+                                <div className="flex items-center space-x-1">
+                                  <span>Category</span>
+                                  {renderSortIcon("gadgets", "category")}
+                                </div>
                               </th>
                               <th
                                 scope="col"
-                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                                onClick={() => handleSort("gadgets", "brand")}
                               >
-                                Brand
+                                <div className="flex items-center space-x-1">
+                                  <span>Brand</span>
+                                  {renderSortIcon("gadgets", "brand")}
+                                </div>
                               </th>
                               <th
                                 scope="col"
-                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                                onClick={() => handleSort("gadgets", "price")}
                               >
-                                Price
+                                <div className="flex items-center space-x-1">
+                                  <span>Price</span>
+                                  {renderSortIcon("gadgets", "price")}
+                                </div>
                               </th>
                               <th
                                 scope="col"
-                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                                onClick={() =>
+                                  handleSort("gadgets", "created_at")
+                                }
                               >
-                                Created
+                                <div className="flex items-center space-x-1">
+                                  <span>Created</span>
+                                  {renderSortIcon("gadgets", "created_at")}
+                                </div>
                               </th>
                               <th
                                 scope="col"
@@ -1245,7 +1807,7 @@ const AdminDashboard = () => {
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-gray-200 bg-white">
-                            {gadgets.map((gadget) => (
+                            {filteredGadgets.map((gadget) => (
                               <tr key={gadget.id}>
                                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
                                   {gadget.name}
@@ -1310,6 +1872,130 @@ const AdminDashboard = () => {
                       A list of all the reviews submitted by users.
                     </p>
                   </div>
+                  <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+                    <button
+                      type="button"
+                      onClick={fetchReviews}
+                      disabled={dataLoading}
+                      className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+                    >
+                      {dataLoading ? (
+                        <>
+                          <svg
+                            className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
+                          Refreshing...
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            className="-ml-1 mr-2 h-4 w-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                            />
+                          </svg>
+                          Refresh Reviews
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Search and Filter Controls */}
+                <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
+                  <div className="relative lg:col-span-2">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg
+                        className="h-5 w-5 text-gray-400"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
+                      </svg>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Search reviews..."
+                      value={reviewSearch}
+                      onChange={(e) => setReviewSearch(e.target.value)}
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <select
+                      value={reviewFilter}
+                      onChange={(e) => setReviewFilter(e.target.value)}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    >
+                      <option value="all">All Ratings</option>
+                      <option value="5">5 Stars</option>
+                      <option value="4">4 Stars</option>
+                      <option value="3">3 Stars</option>
+                      <option value="2">2 Stars</option>
+                      <option value="1">1 Star</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <select
+                      value={reviewDateFilter}
+                      onChange={(e) => setReviewDateFilter(e.target.value)}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    >
+                      <option value="all">All Time</option>
+                      <option value="today">Today</option>
+                      <option value="week">This Week</option>
+                      <option value="month">This Month</option>
+                      <option value="year">This Year</option>
+                    </select>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <button
+                      onClick={clearReviewFilters}
+                      className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                      Clear Filters
+                    </button>
+                  </div>
+                </div>
+
+                {/* Results Count */}
+                <div className="mt-4">
+                  <span className="text-sm text-gray-500">
+                    {filteredReviews.length} of {reviews.length} reviews
+                  </span>
                 </div>
                 <div className="mt-8 flex flex-col">
                   <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -1320,27 +2006,49 @@ const AdminDashboard = () => {
                             <tr>
                               <th
                                 scope="col"
-                                className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
+                                className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 cursor-pointer hover:bg-gray-100"
+                                onClick={() =>
+                                  handleSort("reviews", "user_name")
+                                }
                               >
-                                User
+                                <div className="flex items-center space-x-1">
+                                  <span>User & Username</span>
+                                  {renderSortIcon("reviews", "user_name")}
+                                </div>
                               </th>
                               <th
                                 scope="col"
-                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                                onClick={() =>
+                                  handleSort("reviews", "gadget_name")
+                                }
                               >
-                                Gadget
+                                <div className="flex items-center space-x-1">
+                                  <span>Gadget</span>
+                                  {renderSortIcon("reviews", "gadget_name")}
+                                </div>
                               </th>
                               <th
                                 scope="col"
-                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                                onClick={() => handleSort("reviews", "rating")}
                               >
-                                Rating
+                                <div className="flex items-center space-x-1">
+                                  <span>Rating</span>
+                                  {renderSortIcon("reviews", "rating")}
+                                </div>
                               </th>
                               <th
                                 scope="col"
-                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                                onClick={() =>
+                                  handleSort("reviews", "created_at")
+                                }
                               >
-                                Date
+                                <div className="flex items-center space-x-1">
+                                  <span>Date</span>
+                                  {renderSortIcon("reviews", "created_at")}
+                                </div>
                               </th>
                               <th
                                 scope="col"
@@ -1351,13 +2059,29 @@ const AdminDashboard = () => {
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-gray-200 bg-white">
-                            {reviews.map((review) => (
+                            {filteredReviews.map((review) => (
                               <tr key={review.id}>
                                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                                  {review.user_name || review.user}
+                                  <div className="flex flex-col">
+                                    <span className="font-medium">
+                                      {review.user?.full_name ||
+                                        review.user_name ||
+                                        review.user?.username ||
+                                        "Unknown User"}
+                                    </span>
+                                    {(review.user?.username ||
+                                      review.user_name) && (
+                                      <span className="text-sm text-gray-500">
+                                        {review.user?.username ||
+                                          review.user_name}
+                                      </span>
+                                    )}
+                                  </div>
                                 </td>
                                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                  {review.gadget_name || review.gadget}
+                                  {review.gadget_name ||
+                                    review.gadget?.name ||
+                                    "Unknown Gadget"}
                                 </td>
                                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                   <div className="flex items-center">
@@ -1382,9 +2106,21 @@ const AdminDashboard = () => {
                                   </div>
                                 </td>
                                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                  {new Date(
-                                    review.created_at || review.date
-                                  ).toLocaleDateString()}
+                                  <div className="flex flex-col">
+                                    <span>
+                                      {new Date(
+                                        review.created_at || review.date
+                                      ).toLocaleDateString()}
+                                    </span>
+                                    <span className="text-xs text-gray-400">
+                                      {new Date(
+                                        review.created_at || review.date
+                                      ).toLocaleTimeString([], {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })}
+                                    </span>
+                                  </div>
                                 </td>
                                 <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                                   <div className="flex space-x-2 justify-end">
@@ -2010,6 +2746,68 @@ const AdminDashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3 text-center">
+              {/* Icon */}
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <svg
+                  className="h-6 w-6 text-red-600"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+
+              {/* Title */}
+              <h3 className="text-lg font-medium text-gray-900 mt-2">
+                {deleteModalData.title}
+              </h3>
+
+              {/* Message */}
+              <div className="mt-2 px-7 py-3">
+                <p className="text-sm text-gray-500">
+                  {deleteModalData.message}
+                </p>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex justify-center space-x-4 px-4 py-3">
+                <button
+                  onClick={handleDeleteCancel}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteConfirm}
+                  className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                >
+                  Yes, Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <Alert
+        type={alert.type}
+        message={alert.message}
+        show={alert.show}
+        onClose={() => setAlert({ show: false, type: "", message: "" })}
+      />
     </div>
   );
 };
