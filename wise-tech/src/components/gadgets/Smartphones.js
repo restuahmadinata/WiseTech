@@ -1,18 +1,19 @@
 /**
  * Komponen Smartphones - Halaman daftar smartphone
- * 
+ *
  * Fitur utama:
  * - Menampilkan daftar smartphone dengan gambar dan informasi ringkas
  * - Filter berdasarkan brand, range harga
  * - Sorting berdasarkan terbaru, rating, harga (rendah-tinggi, tinggi-rendah)
  * - Navigasi ke halaman detail smartphone
- * 
+ *
  * API yang digunakan:
  * - GET /api/gadgets?category=smartphone
  */
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { gadgetAPI } from '../../utils/api';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { gadgetAPI } from "../../utils/api";
+import GadgetImage from "./GadgetImage";
 
 const Smartphones = () => {
   const [smartphones, setSmartphones] = useState([]);
@@ -21,16 +22,16 @@ const Smartphones = () => {
   const [filters, setFilters] = useState({
     brands: [],
     minPrice: 0,
-    maxPrice: '',
-    sortBy: 'newest'
+    maxPrice: "",
+    sortBy: "newest",
   });
-  
+
   // Separate state for price inputs (before applying)
   const [priceInputs, setPriceInputs] = useState({
     minPrice: 0,
-    maxPrice: ''
+    maxPrice: "",
   });
-  
+
   useEffect(() => {
     fetchSmartphones();
   }, [filters]);
@@ -42,8 +43,8 @@ const Smartphones = () => {
 
       // Prepare API parameters
       const params = {
-        category: 'Smartphones',
-        page_size: 100 // Ensure we get a good amount of gadgets
+        category: "Smartphones",
+        page_size: 100, // Ensure we get a good amount of gadgets
       };
 
       // Add filters only if they have values
@@ -56,90 +57,107 @@ const Smartphones = () => {
 
       // Add brand filter if selected
       if (filters.brands.length > 0) {
-        params.brand = filters.brands.join(',');
+        params.brand = filters.brands.join(",");
       }
 
       const response = await gadgetAPI.getGadgets(params);
       let smartphonesData = response?.gadgets || response || [];
-      
+
       // Apply client-side sorting
       smartphonesData = applySorting(smartphonesData, filters.sortBy);
-      
+
       setSmartphones(smartphonesData);
     } catch (err) {
-      console.error('Error fetching smartphones:', err);
-      setError('Failed to load smartphones. Please try again later.');
-      
+      console.error("Error fetching smartphones:", err);
+      setError("Failed to load smartphones. Please try again later.");
+
       // Fallback to sample data if API fails
       const mockSmartphones = [
         {
           id: 1,
-          name: 'iPhone 15 Pro',
-          brand: 'Apple',
+          name: "iPhone 15 Pro",
+          brand: "Apple",
           price: 999,
-          rating: 4.8,
-          image_url: 'https://placehold.co/300x200/4F46E5/FFFFFF?text=iPhone+15+Pro',
-          release_date: '2023-09-22',
-          description: 'The most advanced iPhone with titanium design and A17 Pro chip.',
-          operating_system: 'iOS 17'
+          average_rating: 4.8,
+          review_count: 24,
+          image_url:
+            "https://placehold.co/300x200/4F46E5/FFFFFF?text=iPhone+15+Pro",
+          release_date: "2023-09-22",
+          description:
+            "The most advanced iPhone with titanium design and A17 Pro chip.",
+          operating_system: "iOS 17",
         },
         {
           id: 3,
-          name: 'Google Pixel 8',
-          brand: 'Google',
+          name: "Google Pixel 8",
+          brand: "Google",
           price: 699,
-          rating: 4.6,
-          image_url: 'https://placehold.co/300x200/4F46E5/FFFFFF?text=Pixel+8',
-          release_date: '2023-10-12',
-          description: 'Pure Android experience with amazing camera AI features.',
-          operating_system: 'Android 14'
+          average_rating: 4.6,
+          review_count: 18,
+          image_url: "https://placehold.co/300x200/4F46E5/FFFFFF?text=Pixel+8",
+          release_date: "2023-10-12",
+          description:
+            "Pure Android experience with amazing camera AI features.",
+          operating_system: "Android 14",
         },
         {
           id: 4,
-          name: 'Samsung Galaxy S24',
-          brand: 'Samsung',
+          name: "Samsung Galaxy S24",
+          brand: "Samsung",
           price: 799,
-          rating: 4.7,
-          image_url: 'https://placehold.co/300x200/4F46E5/FFFFFF?text=Galaxy+S24',
-          release_date: '2024-01-17',
-          description: 'Flagship Android phone with S Pen support and great cameras.',
-          operating_system: 'Android 14'
+          average_rating: 4.7,
+          review_count: 32,
+          image_url:
+            "https://placehold.co/300x200/4F46E5/FFFFFF?text=Galaxy+S24",
+          release_date: "2024-01-17",
+          description:
+            "Flagship Android phone with S Pen support and great cameras.",
+          operating_system: "Android 14",
         },
         {
           id: 5,
-          name: 'OnePlus 12',
-          brand: 'OnePlus',
+          name: "OnePlus 12",
+          brand: "OnePlus",
           price: 649,
-          rating: 4.5,
-          image_url: 'https://placehold.co/300x200/4F46E5/FFFFFF?text=OnePlus+12',
-          release_date: '2024-02-05',
-          description: 'Fast charging and smooth performance at an attractive price.',
-          operating_system: 'Android 14'
+          average_rating: 4.5,
+          review_count: 15,
+          image_url:
+            "https://placehold.co/300x200/4F46E5/FFFFFF?text=OnePlus+12",
+          release_date: "2024-02-05",
+          description:
+            "Fast charging and smooth performance at an attractive price.",
+          operating_system: "Android 14",
         },
         {
           id: 6,
-          name: 'Xiaomi Mi 14',
-          brand: 'Xiaomi',
+          name: "Xiaomi Mi 14",
+          brand: "Xiaomi",
           price: 549,
-          rating: 4.4,
-          image_url: 'https://placehold.co/300x200/4F46E5/FFFFFF?text=Xiaomi+Mi+14',
-          release_date: '2023-11-30',
-          description: 'Premium features at an affordable price with Leica cameras.',
-          operating_system: 'Android 14'
+          average_rating: 4.4,
+          review_count: 22,
+          image_url:
+            "https://placehold.co/300x200/4F46E5/FFFFFF?text=Xiaomi+Mi+14",
+          release_date: "2023-11-30",
+          description:
+            "Premium features at an affordable price with Leica cameras.",
+          operating_system: "Android 14",
         },
         {
           id: 7,
-          name: 'Sony Xperia 1 V',
-          brand: 'Sony',
+          name: "Sony Xperia 1 V",
+          brand: "Sony",
           price: 899,
-          rating: 4.3,
-          image_url: 'https://placehold.co/300x200/4F46E5/FFFFFF?text=Xperia+1+V',
-          release_date: '2023-05-25',
-          description: 'Professional photography and video features in a smartphone.',
-          operating_system: 'Android 13'
-        }
+          average_rating: 4.3,
+          review_count: 9,
+          image_url:
+            "https://placehold.co/300x200/4F46E5/FFFFFF?text=Xperia+1+V",
+          release_date: "2023-05-25",
+          description:
+            "Professional photography and video features in a smartphone.",
+          operating_system: "Android 13",
+        },
       ];
-      
+
       setSmartphones(mockSmartphones);
     } finally {
       setLoading(false);
@@ -149,13 +167,15 @@ const Smartphones = () => {
   // Function to apply sorting to data
   const applySorting = (data, sortBy) => {
     switch (sortBy) {
-      case 'price_asc':
+      case "price_asc":
         return [...data].sort((a, b) => a.price - b.price);
-      case 'price_desc':
+      case "price_desc":
         return [...data].sort((a, b) => b.price - a.price);
-      case 'rating':
-        return [...data].sort((a, b) => (b.rating || 0) - (a.rating || 0));
-      case 'newest':
+      case "rating":
+        return [...data].sort(
+          (a, b) => (b.average_rating || 0) - (a.average_rating || 0)
+        );
+      case "newest":
       default:
         return [...data].sort((a, b) => {
           if (a.release_date && b.release_date) {
@@ -174,7 +194,7 @@ const Smartphones = () => {
         <svg
           key={i}
           className={`h-4 w-4 ${
-            i <= rating ? 'text-yellow-400' : 'text-gray-300'
+            i <= rating ? "text-yellow-400" : "text-gray-300"
           }`}
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
@@ -190,31 +210,44 @@ const Smartphones = () => {
   // Function to handle filter changes
   const handleFilterChange = (e, filterType) => {
     const { value, checked } = e.target;
-    
-    if (filterType === 'brand') {
-      setFilters(prev => {
+
+    if (filterType === "brand") {
+      setFilters((prev) => {
         if (checked) {
           return { ...prev, brands: [...prev.brands, value] };
         } else {
-          return { ...prev, brands: prev.brands.filter(brand => brand !== value) };
+          return {
+            ...prev,
+            brands: prev.brands.filter((brand) => brand !== value),
+          };
         }
       });
-    } else if (filterType === 'sortBy') {
-      setFilters(prev => ({ ...prev, sortBy: value }));
+    } else if (filterType === "sortBy") {
+      setFilters((prev) => ({ ...prev, sortBy: value }));
     }
   };
 
   // Function to apply price filter
   const applyPriceFilter = () => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       minPrice: priceInputs.minPrice,
-      maxPrice: priceInputs.maxPrice
+      maxPrice: priceInputs.maxPrice,
     }));
   };
 
   // Static brand list to prevent disappearing options when filters are applied
-  const brandsToShow = ['Apple', 'Samsung', 'Google', 'OnePlus', 'Xiaomi', 'Sony', 'Huawei', 'Oppo', 'Vivo'];
+  const brandsToShow = [
+    "Apple",
+    "Samsung",
+    "Google",
+    "OnePlus",
+    "Xiaomi",
+    "Sony",
+    "Huawei",
+    "Oppo",
+    "Vivo",
+  ];
 
   if (loading) {
     return (
@@ -235,7 +268,8 @@ const Smartphones = () => {
                 Find Your Perfect Smartphone
               </h1>
               <p className="mt-4 text-lg text-green-100">
-                Discover the latest smartphones with cutting-edge features and great value.
+                Discover the latest smartphones with cutting-edge features and
+                great value.
               </p>
             </div>
           </div>
@@ -246,8 +280,16 @@ const Smartphones = () => {
           <div className="mt-8 bg-red-50 border border-red-200 rounded-md p-4">
             <div className="flex">
               <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                <svg
+                  className="h-5 w-5 text-red-400"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </div>
               <div className="ml-3">
@@ -262,11 +304,15 @@ const Smartphones = () => {
           {/* Filters */}
           <div className="hidden lg:block">
             <div className="bg-white p-6 rounded-lg shadow-md sticky top-6">
-              <h2 className="font-semibold text-gray-900 text-lg mb-4">Filters</h2>
-              
+              <h2 className="font-semibold text-gray-900 text-lg mb-4">
+                Filters
+              </h2>
+
               {/* Brand filter */}
               <div className="py-4 border-t border-gray-200">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Brand</h3>
+                <h3 className="text-sm font-medium text-gray-700 mb-2">
+                  Brand
+                </h3>
                 <div className="space-y-2">
                   {brandsToShow.map((brand) => (
                     <div key={brand} className="flex items-center">
@@ -276,10 +322,13 @@ const Smartphones = () => {
                         value={brand}
                         type="checkbox"
                         checked={filters.brands.includes(brand)}
-                        onChange={(e) => handleFilterChange(e, 'brand')}
+                        onChange={(e) => handleFilterChange(e, "brand")}
                         className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                       />
-                      <label htmlFor={`brand-${brand}`} className="ml-2 text-sm text-gray-700">
+                      <label
+                        htmlFor={`brand-${brand}`}
+                        className="ml-2 text-sm text-gray-700"
+                      >
                         {brand}
                       </label>
                     </div>
@@ -289,19 +338,26 @@ const Smartphones = () => {
 
               {/* Price range filter */}
               <div className="py-4 border-t border-gray-200">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Price Range</h3>
+                <h3 className="text-sm font-medium text-gray-700 mb-2">
+                  Price Range
+                </h3>
                 <div className="mt-2 space-y-3">
                   <div>
-                    <label className="text-xs text-gray-500 block mb-1">Min Price ($)</label>
-                    <input 
-                      type="number" 
-                      min="0" 
+                    <label className="text-xs text-gray-500 block mb-1">
+                      Min Price ($)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
                       value={priceInputs.minPrice}
                       onChange={(e) => {
-                        const newMin = Math.max(0, parseInt(e.target.value) || 0);
-                        setPriceInputs(prev => ({ 
-                          ...prev, 
-                          minPrice: newMin
+                        const newMin = Math.max(
+                          0,
+                          parseInt(e.target.value) || 0
+                        );
+                        setPriceInputs((prev) => ({
+                          ...prev,
+                          minPrice: newMin,
                         }));
                       }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
@@ -309,16 +365,21 @@ const Smartphones = () => {
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 block mb-1">Max Price ($)</label>
-                    <input 
-                      type="number" 
-                      min="0" 
+                    <label className="text-xs text-gray-500 block mb-1">
+                      Max Price ($)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
                       value={priceInputs.maxPrice}
                       onChange={(e) => {
-                        const newMax = parseInt(e.target.value) || '';
-                        setPriceInputs(prev => ({ 
-                          ...prev, 
-                          maxPrice: newMax === '' ? '' : Math.max(newMax, prev.minPrice)
+                        const newMax = parseInt(e.target.value) || "";
+                        setPriceInputs((prev) => ({
+                          ...prev,
+                          maxPrice:
+                            newMax === ""
+                              ? ""
+                              : Math.max(newMax, prev.minPrice),
                         }));
                       }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
@@ -336,13 +397,15 @@ const Smartphones = () => {
 
               {/* Sort options */}
               <div className="py-4 border-t border-gray-200">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Sort By</h3>
+                <h3 className="text-sm font-medium text-gray-700 mb-2">
+                  Sort By
+                </h3>
                 <div className="space-y-2">
                   {[
-                    { value: 'newest', label: 'Newest' },
-                    { value: 'rating', label: 'Highest Rated' },
-                    { value: 'price_asc', label: 'Price: Low to High' },
-                    { value: 'price_desc', label: 'Price: High to Low' }
+                    { value: "newest", label: "Newest" },
+                    { value: "rating", label: "Highest Rated" },
+                    { value: "price_asc", label: "Price: Low to High" },
+                    { value: "price_desc", label: "Price: High to Low" },
                   ].map((option) => (
                     <div key={option.value} className="flex items-center">
                       <input
@@ -351,10 +414,13 @@ const Smartphones = () => {
                         value={option.value}
                         type="radio"
                         checked={filters.sortBy === option.value}
-                        onChange={(e) => handleFilterChange(e, 'sortBy')}
+                        onChange={(e) => handleFilterChange(e, "sortBy")}
                         className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
                       />
-                      <label htmlFor={`sort-${option.value}`} className="ml-2 text-sm text-gray-700">
+                      <label
+                        htmlFor={`sort-${option.value}`}
+                        className="ml-2 text-sm text-gray-700"
+                      >
                         {option.label}
                       </label>
                     </div>
@@ -372,7 +438,9 @@ const Smartphones = () => {
                 <select
                   className="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                   value={filters.sortBy}
-                  onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
+                  onChange={(e) =>
+                    setFilters((prev) => ({ ...prev, sortBy: e.target.value }))
+                  }
                 >
                   <option value="newest">Sort by: Newest</option>
                   <option value="rating">Sort by: Highest Rated</option>
@@ -384,8 +452,17 @@ const Smartphones = () => {
                 type="button"
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
-                <svg className="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd" />
+                <svg
+                  className="h-5 w-5 mr-2"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 Filters
               </button>
@@ -401,40 +478,49 @@ const Smartphones = () => {
             {/* Products */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {smartphones.map((smartphone) => (
-                <Link 
+                <Link
                   to={`/gadget/${smartphone.id}`}
-                  key={smartphone.id} 
+                  key={smartphone.id}
                   className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full"
                 >
-                  <div className="aspect-w-4 aspect-h-3 bg-gray-200 overflow-hidden">
-                    <img 
-                      src={smartphone.image_url || smartphone.image || 'https://placehold.co/300x200/4F46E5/FFFFFF?text=' + encodeURIComponent(smartphone.name)} 
-                      alt={smartphone.name}
-                      className="w-full h-full object-center object-cover group-hover:opacity-90 transition-opacity duration-300"
-                      onError={(e) => {
-                        e.target.src = 'https://placehold.co/300x200/4F46E5/FFFFFF?text=' + encodeURIComponent(smartphone.name);
-                      }}
-                    />
-                  </div>
+                  <GadgetImage
+                    src={smartphone.image_url || smartphone.image}
+                    alt={smartphone.name}
+                    gadgetName={smartphone.name}
+                    size="grid"
+                    className="group-hover:scale-105 transition-transform duration-300"
+                  />
                   <div className="p-5 flex-grow flex flex-col">
                     <div>
                       <h3 className="text-lg font-medium text-gray-900 group-hover:text-indigo-600 transition-colors duration-150">
                         {smartphone.name}
                       </h3>
-                      <p className="mt-1 text-sm text-gray-500">{smartphone.brand}</p>
+                      <p className="mt-1 text-sm text-gray-500">
+                        {smartphone.brand}
+                      </p>
                       {smartphone.operating_system && (
-                        <p className="mt-1 text-xs text-green-600 font-medium">{smartphone.operating_system}</p>
+                        <p className="mt-1 text-xs text-green-600 font-medium">
+                          {smartphone.operating_system}
+                        </p>
                       )}
                     </div>
                     <div className="mt-2 flex items-center">
                       <div className="flex items-center">
-                        {renderStars(Math.round(smartphone.rating))}
+                        {renderStars(
+                          Math.round(smartphone.average_rating || 0)
+                        )}
                       </div>
-                      <p className="ml-1 text-sm text-gray-500">{smartphone.rating}</p>
+                      <p className="ml-1 text-sm text-gray-500">
+                        {(smartphone.average_rating || 0).toFixed(1)}
+                      </p>
                     </div>
-                    <p className="mt-2 text-sm text-gray-700 line-clamp-2">{smartphone.description}</p>
+                    <p className="mt-2 text-sm text-gray-700 line-clamp-2">
+                      {smartphone.description}
+                    </p>
                     <div className="mt-auto pt-4">
-                      <p className="font-medium text-gray-900">${smartphone.price}</p>
+                      <p className="font-medium text-gray-900">
+                        ${smartphone.price}
+                      </p>
                     </div>
                   </div>
                 </Link>

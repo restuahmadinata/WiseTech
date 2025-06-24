@@ -1,0 +1,86 @@
+/* Gadget image utility classes */
+.gadget-image-container {
+  position: relative;
+  overflow: hidden;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.gadget-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  transition: transform 0.3s ease;
+}
+
+.gadget-image:hover {
+  transform: scale(1.05);
+}
+
+/* Standardized gadget image sizes */
+.gadget-image-card {
+  width: 100%;
+  height: 12rem; /* h-48 = 192px = 12rem */
+}
+
+.gadget-image-featured {
+  width: 100%;
+  height: 12rem; /* h-48 = 192px = 12rem */
+}
+
+.gadget-image-detail {
+  width: 100%;
+  height: 24rem; /* h-96 = 384px = 24rem */
+}
+
+.gadget-image-grid {
+  width: 100%;
+  height: 12rem; /* h-48 = 192px = 12rem */
+}
+
+/* Aspect ratio utilities */
+.aspect-square {
+  aspect-ratio: 1 / 1;
+}
+
+.aspect-4-3 {
+  aspect-ratio: 4 / 3;
+}
+
+.aspect-16-9 {
+  aspect-ratio: 16 / 9;
+}
+
+/* Responsive image containers */
+@media (max-width: 768px) {
+  .gadget-image-detail {
+    height: 16rem; /* h-64 = 256px = 16rem */
+  }
+}
+
+/* Loading and error states */
+.gadget-image-loading {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  background-color: #d1d5db;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.gadget-image-error {
+  background-color: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+}
