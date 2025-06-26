@@ -5,7 +5,7 @@ Pydantic schemas for gadget-related API operations.
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 
 class GadgetSpecBase(BaseModel):
@@ -48,6 +48,12 @@ class GadgetBase(BaseModel):
     price: float
     image_url: Optional[str] = None
 
+    @validator('price')
+    def validate_price(cls, v):
+        if v < 0:
+            raise ValueError('Price cannot be negative')
+        return v
+
 
 class GadgetCreate(GadgetBase):
     """Schema for creating a gadget."""
@@ -68,6 +74,12 @@ class GadgetUpdate(BaseModel):
     price: Optional[float] = None
     release_date: Optional[datetime] = None
     image_url: Optional[str] = None
+
+    @validator('price')
+    def validate_price(cls, v):
+        if v is not None and v < 0:
+            raise ValueError('Price cannot be negative')
+        return v
 
 
 class GadgetInDBBase(GadgetBase):

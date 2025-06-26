@@ -14,11 +14,15 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { gadgetAPI } from "../../utils/api";
 import GadgetImage from "./GadgetImage";
+import NoDataModal from "../common/NoDataModal";
 
 const Tablets = () => {
   const [tablets, setTablets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showNoDataModal, setShowNoDataModal] = useState(false);
+  const [hasUserFiltered, setHasUserFiltered] = useState(false); // Track if user has applied filters
+  const [isInitialLoad, setIsInitialLoad] = useState(true); // Track initial load
   const [filters, setFilters] = useState({
     brands: [],
     minPrice: 0,
@@ -35,6 +39,13 @@ const Tablets = () => {
   useEffect(() => {
     fetchTablets();
   }, [filters]);
+
+  // Reset states when component unmounts or filters change
+  useEffect(() => {
+    return () => {
+      setShowNoDataModal(false);
+    };
+  }, []);
 
   const fetchTablets = async () => {
     try {
@@ -65,8 +76,12 @@ const Tablets = () => {
 
       // Apply client-side sorting
       tabletsData = applySorting(tabletsData, filters.sortBy);
-
       setTablets(tabletsData);
+
+      // Only show modal if user has filtered and no results found (not on initial load)
+      if (hasUserFiltered && tabletsData.length === 0 && !isInitialLoad) {
+        setShowNoDataModal(true);
+      }
     } catch (err) {
       console.error("Error fetching tablets:", err);
       setError("Failed to load tablets. Please try again later.");
@@ -160,6 +175,7 @@ const Tablets = () => {
       setTablets(mockTablets);
     } finally {
       setLoading(false);
+      setIsInitialLoad(false); // Mark that initial load is complete
     }
   };
 
@@ -211,6 +227,7 @@ const Tablets = () => {
     const { value, checked } = e.target;
 
     if (filterType === "brand") {
+      setHasUserFiltered(true); // Mark that user has filtered
       setFilters((prev) => {
         if (checked) {
           return { ...prev, brands: [...prev.brands, value] };
@@ -222,12 +239,14 @@ const Tablets = () => {
         }
       });
     } else if (filterType === "sortBy") {
+      setHasUserFiltered(true); // Mark that user has filtered
       setFilters((prev) => ({ ...prev, sortBy: value }));
     }
   };
 
   // Function to apply price filter
   const applyPriceFilter = () => {
+    setHasUserFiltered(true); // Mark that user has filtered
     setFilters((prev) => ({
       ...prev,
       minPrice: priceInputs.minPrice,
@@ -474,55 +493,121 @@ const Tablets = () => {
 
             {/* Products */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {tablets.map((tablet) => (
-                <Link
-                  to={`/gadget/${tablet.id}`}
-                  key={tablet.id}
-                  className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full"
-                >
-                  <GadgetImage
-                    src={tablet.image_url || tablet.image}
-                    alt={tablet.name}
-                    gadgetName={tablet.name}
-                    size="grid"
-                    className="group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="p-5 flex-grow flex flex-col">
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-900 group-hover:text-purple-600 transition-colors duration-150">
-                        {tablet.name}
-                      </h3>
-                      <p className="mt-1 text-sm text-gray-500">
-                        {tablet.brand}
-                      </p>
-                      {tablet.screen_size && (
-                        <p className="mt-1 text-xs text-purple-600 font-medium">
-                          {tablet.screen_size}
-                        </p>
-                      )}
-                    </div>
-                    <div className="mt-2 flex items-center">
-                      <div className="flex items-center">
-                        {renderStars(Math.round(tablet.average_rating || 0))}
-                      </div>
-                      <p className="ml-1 text-sm text-gray-500">
-                        {(tablet.average_rating || 0).toFixed(1)}
-                      </p>
-                    </div>
-                    <p className="mt-2 text-sm text-gray-700 line-clamp-2">
-                      {tablet.description}
-                    </p>
-                    <div className="mt-auto pt-4">
-                      <p className="font-medium text-gray-900">
-                        ${tablet.price}
-                      </p>
-                    </div>
+              {tablets.length === 0 ? (
+                <div className="col-span-full text-center py-12 bg-white rounded-lg shadow-sm">
+                  <div className="text-gray-400 mb-4">
+                    <svg
+                      className="mx-auto h-12 w-12"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M12 14l9-5-9-5-9 5 9 5z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"
+                      />
+                    </svg>
                   </div>
-                </Link>
-              ))}
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No Tablets Found
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    No tablets match your current filters. Try adjusting your
+                    search criteria.
+                  </p>
+                  <button
+                    type="button"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                    onClick={() => setShowNoDataModal(true)}
+                  >
+                    View More Options
+                  </button>
+                </div>
+              ) : (
+                tablets.map((tablet) => (
+                  <Link
+                    to={`/gadget/${tablet.id}`}
+                    key={tablet.id}
+                    className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full"
+                  >
+                    <GadgetImage
+                      src={tablet.image_url || tablet.image}
+                      alt={tablet.name}
+                      gadgetName={tablet.name}
+                      size="grid"
+                      className="group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="p-5 flex-grow flex flex-col">
+                      <div>
+                        <h3 className="text-lg font-medium text-gray-900 group-hover:text-purple-600 transition-colors duration-150">
+                          {tablet.name}
+                        </h3>
+                        <p className="mt-1 text-sm text-gray-500">
+                          {tablet.brand}
+                        </p>
+                        {tablet.screen_size && (
+                          <p className="mt-1 text-xs text-purple-600 font-medium">
+                            {tablet.screen_size}
+                          </p>
+                        )}
+                      </div>
+                      <div className="mt-2 flex items-center">
+                        <div className="flex items-center">
+                          {renderStars(Math.round(tablet.average_rating || 0))}
+                        </div>
+                        <p className="ml-1 text-sm text-gray-500">
+                          {(tablet.average_rating || 0).toFixed(1)}
+                        </p>
+                      </div>
+                      <p className="mt-2 text-sm text-gray-700 line-clamp-2">
+                        {tablet.description}
+                      </p>
+                      <div className="mt-auto pt-4">
+                        <p className="font-medium text-gray-900">
+                          ${tablet.price}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                ))
+              )}
             </div>
           </div>
         </div>
+
+        {/* NoDataModal */}
+        <NoDataModal
+          show={showNoDataModal}
+          onClose={() => setShowNoDataModal(false)}
+          title="No Tablets Available"
+          message="We couldn't find any tablets matching your criteria. Try adjusting your filters or check back later for new arrivals."
+          icon="tablet"
+          actionButton={{
+            text: "Reset Filters",
+            onClick: () => {
+              setFilters({
+                brands: [],
+                minPrice: 0,
+                maxPrice: "",
+                sortBy: "newest",
+              });
+              setPriceInputs({
+                minPrice: 0,
+                maxPrice: "",
+              });
+              setHasUserFiltered(false); // Reset filter flag
+              setShowNoDataModal(false);
+            },
+          }}
+        />
       </div>
     </div>
   );

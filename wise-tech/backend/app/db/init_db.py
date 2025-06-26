@@ -1,14 +1,10 @@
-"""
-Script to initialize database with sample data.
-"""
-
+""" Script to initialize database with sample data. """
 import logging
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 from sqlalchemy.orm import Session
 
-# Add parent directory to Python path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app import crud, schemas
@@ -37,121 +33,121 @@ def init_db(db: Session) -> None:
             bio="Administrator account for WiseTech platform.",
         )
         admin_user = crud.user.create(db, obj_in=admin_in)
-        
+
         # Set admin privileges
         admin_user.is_admin = True
         db.add(admin_user)
         db.commit()
-    
+
     # Create sample users - 15 users total
     sample_users = [
         {
-            "email": "john.doe@example.com",
-            "username": "John Doe",
+            "email": "john.digital@example.com",
+            "username": "johndigital",
             "password": "password123",
-            "full_name": "John Doe",
-            "bio": "Tech enthusiast and reviewer specializing in smartphones.",
+            "full_name": "Johnathan Digital",
+            "bio": "Avid tech reviewer focusing on mobile innovations.",
         },
         {
-            "email": "sarah.smith@example.com",
-            "username": "Sarah Smith",
+            "email": "sarah.t@example.com",
+            "username": "sarah_techie",
             "password": "password123",
-            "full_name": "Sarah Smith",
-            "bio": "Passionate about smartphones and mobile photography.",
+            "full_name": "Sarah Thompson",
+            "bio": "Exploring the latest in smart home tech and gadgets.",
         },
         {
-            "email": "michael.johnson@example.com",
-            "username": "Mike Johnson",
+            "email": "michael.g@example.com",
+            "username": "mike_gadgets",
             "password": "password123",
-            "full_name": "Michael Johnson",
-            "bio": "Computer engineer and laptop expert.",
+            "full_name": "Michael G. Johnson",
+            "bio": "Dedicated to testing and reviewing high-performance computing devices.",
         },
         {
-            "email": "emily.chen@example.com",
-            "username": "Emily Chenny",
+            "email": "emily.r@example.com",
+            "username": "emily_reviews",
             "password": "password123",
-            "full_name": "Emily Chen",
-            "bio": "Content creator and tablet enthusiast.",
+            "full_name": "Emily R. Chen",
+            "bio": "Sharing insights on portable devices and productivity tools.",
         },
         {
-            "email": "david.wilson@example.com",
-            "username": "DavidWilsons ",
+            "email": "david.guru@example.com",
+            "username": "dave_techguru",
             "password": "password123",
-            "full_name": "David Wilson",
-            "bio": "Gaming enthusiast and hardware reviewer.",
+            "full_name": "David W. Wilson",
+            "bio": "A true tech enthusiast, deep-diving into new innovations.",
         },
         {
-            "email": "lisa.garcia@example.com",
-            "username": "lisagarcia",
+            "email": "lisa.g@example.com",
+            "username": "lisag_tech",
             "password": "password123",
-            "full_name": "Lisa Garcia",
-            "bio": "Professional photographer and tech reviewer.",
+            "full_name": "Elisabeth Garcia",
+            "bio": "Analyst specializing in consumer electronics and user experience.",
         },
         {
-            "email": "james.taylor@example.com",
-            "username": "Jamestaylor",
+            "email": "james.d@example.com",
+            "username": "jamie_dev",
             "password": "password123",
-            "full_name": "James Taylor",
-            "bio": "Software developer with passion for mobile devices.",
+            "full_name": "James P. Taylor",
+            "bio": "Software developer with a keen eye for hardware integration.",
         },
         {
-            "email": "amanda.brown@example.com",
-            "username": "Brown Amanda",
+            "email": "amanda.b@example.com",
+            "username": "amanda_biztech",
             "password": "password123",
-            "full_name": "Amanda Brown",
-            "bio": "Business professional focusing on productivity tools.",
+            "full_name": "Amanda L. Brown",
+            "bio": "Business strategist leveraging technology for efficiency.",
         },
         {
-            "email": "robert.lee@example.com",
-            "username": "Robert L33",
+            "email": "robert.l@example.com",
+            "username": "robert_techanalyst",
             "password": "password123",
-            "full_name": "Robert Lee",
-            "bio": "Tech journalist and industry analyst.",
+            "full_name": "Robert S. Lee",
+            "bio": "Chronicling the evolution of personal tech and its impact.",
         },
         {
-            "email": "maria.gonzalez@example.com",
-            "username": "Maria Gonza",
+            "email": "maria.c@example.com",
+            "username": "mariacreates",
             "password": "password123",
-            "full_name": "Maria Gonzalez",
-            "bio": "Digital artist and creative professional.",
+            "full_name": "Maria C. Gonzalez",
+            "bio": "Visual artist and digital content creator.",
         },
         {
-            "email": "kevin.kim@example.com",
-            "username": "Kevin k1m",
+            "email": "kevin.k@example.com",
+            "username": "kevinktech",
             "password": "password123",
-            "full_name": "Kevin Kim",
-            "bio": "Student and casual tech user.",
+            "full_name": "Kevin J. Kim",
+            "bio": "Exploring budget-friendly tech solutions for everyday users.",
         },
         {
-            "email": "stephanie.davis@example.com",
-            "username": "Stephanyyy",
+            "email": "stephanie.u@example.com",
+            "username": "steph_ux",
             "password": "password123",
-            "full_name": "Stephanie Davis",
-            "bio": "UI/UX designer interested in device ergonomics.",
+            "full_name": "Stephanie A. Davis",
+            "bio": "Focusing on the design and usability of new technologies.",
         },
         {
-            "email": "alex.rodriguez@example.com",
-            "username": "Rodri Alexious",
+            "email": "alex.i@example.com",
+            "username": "alex_itpro",
             "password": "password123",
-            "full_name": "Alex Rodriguez",
-            "bio": "IT consultant and enterprise technology expert.",
+            "full_name": "Alexander Rodriguez",
+            "bio": "IT professional evaluating enterprise-grade gadgets.",
         },
         {
-            "email": "jennifer.white@example.com",
-            "username": "Jenniwhite",
+            "email": "jennifer.s@example.com",
+            "username": "jen_socialtech",
             "password": "password123",
-            "full_name": "Jennifer White",
-            "bio": "Marketing professional and social media enthusiast.",
+            "full_name": "Jennifer M. White",
+            "bio": "Social media expert reviewing devices for connectivity and content.",
         },
         {
-            "email": "daniel.martinez@example.com",
-            "username": "danielmartinez",
+            "email": "daniel.e@example.com",
+            "username": "dan_editspro",
             "password": "password123",
-            "full_name": "Daniel Martinez",
-            "bio": "Video editor and content creation specialist.",
+            "full_name": "Daniel M. Martinez",
+            "bio": "Video and audio production specialist, reviewing media gadgets.",
         },
     ]
-    
+
     created_users = []
     for user_data in sample_users:
         user = crud.user.get_by_email(db, email=user_data["email"])
@@ -160,8 +156,8 @@ def init_db(db: Session) -> None:
             user_in = schemas.UserCreate(**user_data)
             user = crud.user.create(db, obj_in=user_in)
             created_users.append(user)
-    
-    # Create sample gadgets - 30 items across different categories
+
+    # Buat sample gadgets - 30 gadgets total
     sample_gadgets = [
         # Smartphones (10 items)
         {
@@ -334,7 +330,6 @@ def init_db(db: Session) -> None:
                 {"name": "Battery", "value": "5,000 mAh"},
             ],
         },
-
         # Laptops (10 items)
         {
             "name": "MacBook Pro 16\" M3",
@@ -506,7 +501,6 @@ def init_db(db: Session) -> None:
                 {"name": "Battery", "value": "90Wh"},
             ],
         },
-
         # Tablets (10 items)
         {
             "name": "iPad Pro 12.9\" M2",
@@ -679,417 +673,384 @@ def init_db(db: Session) -> None:
             ],
         },
     ]
-    
+
     created_gadgets = []
     for gadget_data in sample_gadgets:
         specs = gadget_data.pop("specs")
-        
-        # Check if gadget already exists
+
+        # Mengecek apakah gadget sudah ada
         existing_gadgets = crud.gadget.filter_gadgets(
             db, category=gadget_data["category"], brand=gadget_data["brand"]
         )
-        
+
         exists = False
         for g in existing_gadgets:
             if g.name == gadget_data["name"]:
                 exists = True
                 created_gadgets.append(g)
                 break
-                
+
         if not exists:
             logger.info(f"Creating gadget {gadget_data['name']}")
             gadget_in = schemas.GadgetCreate(**gadget_data)
             gadget = crud.gadget.create_with_specs(db, gadget_in=gadget_in, specs=specs)
             created_gadgets.append(gadget)
-    
+
     # Create sample reviews - 50+ reviews across different gadgets
     sample_reviews = [
         # iPhone 15 Pro reviews
         {
             "gadget_name": "iPhone 15 Pro",
-            "user_name": "John Doe",
-            "title": "Amazing Camera Quality and Performance",
-            "content": "The camera quality is mind-blowing! The new A17 Pro chip delivers incredible performance for everything from gaming to video editing. Battery life has significantly improved compared to previous models.",
+            "user_name": "johndigital",
+            "title": "Camera and Chipset: A Leap Forward!",
+            "content": "The new A17 Pro chip makes this phone incredibly fast for all tasks, and the camera system captures details I've never seen before on a smartphone. Battery life is also a significant upgrade, easily lasting me a full day.",
             "rating": 5.0,
-            "pros": "Outstanding camera system, blazing fast performance, premium build quality, excellent battery life",
-            "cons": "Very expensive, no charger included, limited customization options",
+            "pros": "Revolutionary camera, unparalleled performance, premium feel, extended battery life",
+            "cons": "High entry price, proprietary charging port, accessories are expensive",
         },
         {
             "gadget_name": "iPhone 15 Pro",
-            "user_name": "Sarah Smith",
-            "title": "Great for Photography",
-            "content": "As a photographer, I'm impressed with the camera capabilities. The Pro cameras produce stunning results in various lighting conditions.",
-            "rating": 4.0,
-            "pros": "Professional-grade cameras, great color accuracy, reliable performance",
-            "cons": "Price point is high, storage options are expensive",
+            "user_name": "sarah_techie",
+            "title": "Beyond Photography, It's an Experience",
+            "content": "Every photo I take looks professional, even in low light. The iOS ecosystem remains seamless, and the display is just stunning. It truly redefines mobile photography.",
+            "rating": 4.5,
+            "pros": "Exceptional photo quality, smooth user interface, robust build, vibrant display",
+            "cons": "Still no true customization, feels a bit heavy",
         },
-        
         # Samsung Galaxy S24 Ultra reviews
         {
             "gadget_name": "Samsung Galaxy S24 Ultra",
-            "user_name": "David Wilson",
-            "title": "S Pen Makes All the Difference",
-            "content": "The S Pen integration is fantastic for productivity and note-taking. The display is absolutely gorgeous and the camera zoom capabilities are unmatched.",
+            "user_name": "dave_techguru",
+            "title": "S Pen Integration is a Game Changer for Productivity",
+            "content": "The S Pen is unbelievably useful for both work and casual drawing. The screen is vibrant and huge, making multitasking a breeze. The zoom camera is truly impressive!",
             "rating": 5.0,
-            "pros": "Excellent S Pen functionality, stunning display, incredible zoom range, great multitasking",
-            "cons": "Large size might not suit everyone, battery could be better with heavy use",
+            "pros": "Integrated S Pen, gorgeous AMOLED display, powerful zoom camera, excellent for multitasking",
+            "cons": "Very large form factor, premium price tag, slightly less intuitive than iOS",
         },
         {
             "gadget_name": "Samsung Galaxy S24 Ultra",
-            "user_name": "Lisa Garcia",
-            "title": "Photography Powerhouse",
-            "content": "The camera system is incredible, especially the telephoto lens. Perfect for professional photography needs.",
-            "rating": 5.0,
-            "pros": "Outstanding camera system, S Pen included, premium design",
-            "cons": "Expensive, can get warm during intensive use",
+            "user_name": "lisag_tech",
+            "title": "A True Powerhouse for Creators",
+            "content": "From detailed photo editing to quick sketches, this phone handles everything. The large display and S Pen make it perfect for creative professionals on the go. Battery life is decent.",
+            "rating": 4.5,
+            "pros": "Versatile S Pen, stunning display, robust performance, superb camera array",
+            "cons": "Can feel bulky in small hands, fast charging could be faster",
         },
-
         # Google Pixel 8 Pro reviews
         {
             "gadget_name": "Google Pixel 8 Pro",
-            "user_name": "James Taylor",
-            "title": "Pure Android Experience",
-            "content": "Clean Android experience with incredible AI features. The computational photography is still the best in the business.",
+            "user_name": "jamie_dev",
+            "title": "Smartest Camera on an Android",
+            "content": "The AI features are incredibly clever, especially for photo enhancements. Stock Android is a breath of fresh air. It's not the fastest phone, but the software experience is top-notch.",
             "rating": 4.0,
-            "pros": "Clean software, excellent camera AI, regular updates, great call screening",
-            "cons": "Build quality could be better, sometimes gets warm",
+            "pros": "Best-in-class computational photography, clean Android, smart AI features, timely updates",
+            "cons": "Battery life is just average, performance isn't flagship-level, design is a bit bland",
         },
         {
             "gadget_name": "Google Pixel 8 Pro",
-            "user_name": "Robert Lee",
-            "title": "AI Features Are Game Changing",
-            "content": "Google's AI integration throughout the phone is impressive. Camera features like Magic Eraser and Real Tone work brilliantly.",
+            "user_name": "robert_techanalyst",
+            "title": "AI Magic for Everyday Use",
+            "content": "The integration of AI into daily tasks, from call screening to photo editing, is seamless and genuinely useful. Google's software polish really shines through.",
             "rating": 4.0,
-            "pros": "Advanced AI features, excellent camera processing, timely updates",
-            "cons": "Battery life could be improved, limited availability",
+            "pros": "Innovative AI functions, superior photo processing, smooth software experience, solid privacy features",
+            "cons": "Tensor chip can run warm, screen brightness could be higher outdoors",
         },
-
         # OnePlus 12 reviews
         {
             "gadget_name": "OnePlus 12",
-            "user_name": "Kevin Kim",
-            "title": "Great Value Flagship",
-            "content": "Incredible performance at a competitive price. The fast charging is absolutely insane - 0 to 100% in under 30 minutes!",
+            "user_name": "kevinktech",
+            "title": "Speed Demon with Unbelievable Charging",
+            "content": "This phone charges ridiculously fast, making battery anxiety a thing of the past. Performance is snappy for gaming and daily use, offering great value for money.",
             "rating": 4.0,
-            "pros": "Excellent performance, ultra-fast charging, good value for money, clean software",
-            "cons": "Camera could be better, no wireless charging in some regions",
+            "pros": "Blazing fast charging, fluid display, top-tier performance, sleek design",
+            "cons": "Camera is good but not great, OxygenOS has lost some of its charm, no official IP rating",
         },
-
         # MacBook Pro 16\" M3 reviews
         {
             "gadget_name": "MacBook Pro 16\" M3",
-            "user_name": "Maria Gonzalez",
-            "title": "Perfect for Creative Work",
-            "content": "The M3 chip handles video editing, 3D rendering, and graphic design tasks effortlessly. The display is absolutely stunning for creative work.",
+            "user_name": "mariacreates",
+            "title": "The Ultimate Creative Workstation",
+            "content": "As a digital artist, this machine is a dream. The M3 chip handles massive files and complex rendering effortlessly, and the Liquid Retina XDR display is phenomenal for color accuracy.",
             "rating": 5.0,
-            "pros": "Incredible performance, beautiful display, excellent build quality, great speakers",
-            "cons": "Very expensive, limited ports, heavy for travel",
+            "pros": "Unmatched processing power, gorgeous display, long battery life, quiet operation under load",
+            "cons": "Extremely expensive, limited port selection without adapters, heavy for portability",
         },
         {
             "gadget_name": "MacBook Pro 16\" M3",
-            "user_name": "Daniel Martinez",
-            "title": "Video Editing Beast",
-            "content": "As a video editor, this machine handles 4K footage like butter. The battery life is impressive even under heavy workloads.",
+            "user_name": "dan_editspro",
+            "title": "Effortless Video Editing and Rendering",
+            "content": "I've cut 8K footage on this without a hitch. The battery just keeps going, even with intense video exports. It's an investment, but one that truly pays off for professionals.",
             "rating": 5.0,
-            "pros": "Unmatched performance for creative work, long battery life, silent operation",
-            "cons": "Premium price, learning curve for Windows users",
+            "pros": "Exceptional performance for heavy tasks, superb battery, crisp audio, solid build",
+            "cons": "Price is prohibitive for many, limited repairability",
         },
-
         # Dell XPS 13 Plus reviews
         {
             "gadget_name": "Dell XPS 13 Plus",
-            "user_name": "Brown Amanda",
-            "title": "Great Business Laptop",
-            "content": "Perfect for business use. The OLED display is gorgeous and the build quality is top-notch. Very portable for frequent travelers.",
-            "rating": 4.0,
-            "pros": "Premium build quality, stunning OLED display, compact design, good performance",
-            "cons": "Limited ports, touchbar can be frustrating, expensive",
+            "user_name": "amanda_biztech",
+            "title": "Sleek Design, Powerful Performance for Professionals",
+            "content": "This laptop is stunning to look at and incredibly portable. The OLED screen is fantastic for presentations, and it handles all my business applications with ease. The haptic touchpad takes some getting used to.",
+            "rating": 4.5,
+            "pros": "Stunning design, vibrant OLED display, excellent portability, strong performance for its size",
+            "cons": "Lack of traditional function row, limited port selection (only USB-C), can get warm under load",
         },
-
         # Samsung Galaxy Book Pro reviews
         {
             "gadget_name": "Samsung Galaxy Book Pro",
-            "user_name": "Mike Johnson",
-            "title": "Great Performance, Mediocre Speakers",
-            "content": "Great performance for productivity tasks but the speakers could definitely be better. The AMOLED display is beautiful though.",
+            "user_name": "mike_gadgets",
+            "title": "Featherlight with a Brilliant Display",
+            "content": "The AMOLED screen is a visual treat, and the laptop is incredibly light, making it perfect for travel. Performance is solid for everyday tasks, but the speakers are definitely a weak point.",
             "rating": 4.0,
-            "pros": "Lightweight design, beautiful AMOLED display, fast performance, good battery life",
-            "cons": "Average speakers, limited ports, can get warm",
+            "pros": "Extremely lightweight, beautiful AMOLED display, decent battery life, thin profile",
+            "cons": "Underwhelming speakers, build feels a bit flimsy, performance bottlenecks under heavy load",
         },
-
         # ASUS ROG Strix G16 reviews
         {
             "gadget_name": "ASUS ROG Strix G16",
-            "user_name": "DavidWilsons ",
-            "title": "Gaming Powerhouse",
-            "content": "Handles all modern games at high settings without breaking a sweat. The cooling system works well even during extended gaming sessions.",
+            "user_name": "dave_techguru",
+            "title": "Unleash the Gaming Beast!",
+            "content": "This machine devours any game I throw at it, maintaining high frame rates. The cooling system is surprisingly effective, preventing throttling even during marathon sessions.",
             "rating": 5.0,
-            "pros": "Excellent gaming performance, good cooling, high refresh rate display, RGB lighting",
-            "cons": "Heavy and bulky, loud fans under load, poor battery life",
+            "pros": "Exceptional gaming performance, effective cooling, high refresh rate display, customizable RGB",
+            "cons": "Very bulky and heavy, fan noise can be significant, battery life is poor when gaming",
         },
-
         # iPad Pro 12.9\" M2 reviews
         {
             "gadget_name": "iPad Pro 12.9\" M2",
-            "user_name": "Emily Chenny",
-            "title": "Perfect for Digital Art",
-            "content": "The M2 chip makes this tablet incredibly powerful. The Apple Pencil integration is flawless for digital art and note-taking.",
+            "user_name": "emily_reviews",
+            "title": "A Canvas for Digital Creation",
+            "content": "The M2 chip makes this iPad fly, and the large Liquid Retina XDR screen is perfect for my digital art. The Apple Pencil responsiveness is unmatched. It's almost a laptop replacement for me.",
             "rating": 5.0,
-            "pros": "Incredible display, powerful M2 chip, excellent Apple Pencil support, premium build",
-            "cons": "Very expensive, accessories sold separately, iPadOS limitations",
+            "pros": "Incredible display, powerful M2 chip, flawless Apple Pencil integration, sleek design",
+            "cons": "Expensive, accessories are pricey, iPadOS still has some limitations compared to desktop OS",
         },
         {
             "gadget_name": "iPad Pro 12.9\" M2",
-            "user_name": "Stephanyyy",
-            "title": "Great for Productivity",
-            "content": "With the Magic Keyboard, this becomes a legitimate laptop replacement for many tasks. The display quality is unmatched.",
-            "rating": 4.0,
-            "pros": "Laptop-like performance, stunning display, great for creativity, long battery life",
-            "cons": "Expensive with accessories, iPadOS can be limiting, no traditional file system",
+            "user_name": "steph_ux",
+            "title": "Productivity Powerhouse with Stunning Visuals",
+            "content": "This iPad paired with the Magic Keyboard is a fantastic setup for design work and presentations. The display quality is simply breathtaking. It's expensive, but worth it for the performance and portability.",
+            "rating": 4.5,
+            "pros": "Brilliant display, robust performance, highly portable, great for professional apps",
+            "cons": "Cost of entry plus accessories is high, file management can be cumbersome",
         },
-
         # iPad Air 5th Gen reviews
         {
             "gadget_name": "iPad Air 5th Gen",
-            "user_name": "Kevin k1m",
-            "title": "Perfect for Students",
-            "content": "Great balance of performance and price for students. Handles all my coursework and entertainment needs perfectly.",
+            "user_name": "kevinktech",
+            "title": "Best Value iPad for Most Users",
+            "content": "The M1 chip is overkill for casual use, but it makes this iPad incredibly future-proof. It's the perfect size for reading, streaming, and light work, offering great balance between price and performance.",
             "rating": 4.0,
-            "pros": "Good performance, reasonable price, Apple Pencil support, portable",
-            "cons": "Base storage is limited, accessories are expensive",
+            "pros": "Excellent performance for the price, vibrant display, lightweight, good battery",
+            "cons": "Base storage can be limiting, no Face ID, still relies on expensive accessories",
         },
-
         # Samsung Galaxy Tab S9 Ultra reviews
         {
             "gadget_name": "Samsung Galaxy Tab S9 Ultra",
-            "user_name": "Rodri Alexious",
-            "title": "Android Tablet Done Right",
-            "content": "Finally, an Android tablet that can compete with iPads. The S Pen included is a nice touch and the display is enormous.",
+            "user_name": "alex_itpro",
+            "title": "Desktop-Class Android Tablet",
+            "content": "The screen is truly massive, great for multitasking with DeX mode. The S Pen is a welcome addition. While it's powerful, Android tablet apps sometimes struggle to utilize the full screen real estate.",
             "rating": 4.0,
-            "pros": "Huge beautiful display, S Pen included, good multitasking, DeX mode",
-            "cons": "Android tablet apps still lacking, expensive, can be unwieldy",
+            "pros": "Enormous and beautiful AMOLED display, included S Pen, great for DeX multitasking, powerful performance",
+            "cons": "Very large and somewhat awkward to hold, Android app optimization isn't always perfect, high price",
         },
-
         # Microsoft Surface Pro 9 reviews
         {
             "gadget_name": "Microsoft Surface Pro 9",
-            "user_name": "Jenniwhite",
-            "title": "True 2-in-1 Experience",
-            "content": "The versatility of having both tablet and laptop functionality in one device is unmatched. Perfect for presentations and mobile work.",
+            "user_name": "jen_socialtech",
+            "title": "The Ultimate Hybrid Device",
+            "content": "Being able to switch between a tablet and a full Windows laptop seamlessly is incredibly convenient. Perfect for my diverse workflow, from content creation to presentations. Battery life is decent but not stellar.",
             "rating": 4.0,
-            "pros": "True 2-in-1 functionality, full Windows experience, good performance, versatile",
-            "cons": "Type cover is expensive, average battery life, can get warm",
+            "pros": "True 2-in-1 versatility, full Windows OS, excellent build quality, responsive touchscreen",
+            "cons": "Keyboard and Pen sold separately (expensive!), battery life could be longer, gets warm sometimes",
         },
-
-        # Additional reviews for variety
         {
             "gadget_name": "Xiaomi 14 Ultra",
-            "user_name": "lisagarcia",
-            "title": "Incredible Camera for the Price",
-            "content": "The Leica camera system is outstanding. Great value compared to other flagship phones with similar camera quality.",
+            "user_name": "lisag_tech",
+            "title": "Leica Camera Partnership Delivers!",
+            "content": "The camera on this phone is truly exceptional, rivaling dedicated cameras. Xiaomi has really stepped up their game with premium materials and flagship performance at a competitive price.",
             "rating": 5.0,
-            "pros": "Exceptional camera quality, premium build, competitive pricing, fast performance",
-            "cons": "MIUI can be bloated, availability issues, no wireless charging",
+            "pros": "Stunning Leica-tuned cameras, premium design and materials, powerful performance, fast charging",
+            "cons": "MIUI can be heavy with bloatware, availability outside China can be tricky",
         },
-
         {
             "gadget_name": "iPhone 14",
-            "user_name": "Sarah Smith",
-            "title": "Still a Great Phone",
-            "content": "Even though it's not the latest, the iPhone 14 still delivers excellent performance and camera quality for most users.",
+            "user_name": "sarah_techie",
+            "title": "Reliable Performer for Everyday",
+            "content": "Though not the newest, the iPhone 14 is still a fantastic daily driver. The camera is solid, performance is smooth, and it integrates perfectly with my other Apple devices.",
             "rating": 4.0,
-            "pros": "Reliable performance, good camera, iOS ecosystem, regular updates",
-            "cons": "Starting to feel dated, expensive for the features, battery could be better",
+            "pros": "Consistent performance, good camera for photos/videos, excellent integration with Apple ecosystem, durable build",
+            "cons": "Design is getting old, battery life is just okay for heavy users, high price for older tech",
         },
-
         {
             "gadget_name": "Samsung Galaxy A54",
-            "user_name": "Kevin k1m",
-            "title": "Excellent Mid-Range Option",
-            "content": "Great phone for the price. Camera is surprisingly good and battery lasts all day with moderate to heavy use.",
+            "user_name": "kevinktech",
+            "title": "Mid-Range Gem with Premium Features",
+            "content": "For its price, this phone punches above its weight. The AMOLED display is vibrant, the camera takes surprisingly good shots, and the battery easily gets me through the day.",
             "rating": 4.0,
-            "pros": "Good value for money, decent camera, long battery life, nice display",
-            "cons": "Performance could be better, plastic build, slower charging",
+            "pros": "Great value, vibrant display, solid camera performance, excellent battery life",
+            "cons": "Plastic back feels less premium, processor can be sluggish with demanding apps, bezels are a bit thick",
         },
-
         {
             "gadget_name": "Nothing Phone 2",
-            "user_name": "Jamestaylor",
-            "title": "Unique and Functional",
-            "content": "The Glyph interface is not just a gimmick - it's actually quite useful. Clean Android experience is refreshing.",
+            "user_name": "jamie_dev",
+            "title": "A Refreshingly Unique Android Experience",
+            "content": "The Glyph interface isn't just a novelty; it adds a unique layer of interaction. The phone runs very smoothly, and the clean Android experience is a definite plus. A truly distinct device.",
             "rating": 4.0,
-            "pros": "Unique design, clean software, good performance, innovative features",
-            "cons": "Glyph interface battery drain, limited availability, camera could improve",
+            "pros": "Innovative Glyph interface, clean software, good performance, eye-catching design",
+            "cons": "Camera is decent but not flagship-tier, Glyph can drain battery if overused, limited market presence",
         },
-
         {
             "gadget_name": "ASUS ROG Phone 8",
-            "user_name": "DavidWilsons ",
-            "title": "Ultimate Gaming Phone",
-            "content": "If you're serious about mobile gaming, this is the phone to get. The cooling system and gaming features are unmatched.",
+            "user_name": "dave_techguru",
+            "title": "Mobile Gaming Redefined",
+            "content": "This phone is a beast for gaming. The cooling system keeps everything running at peak performance, and the display is incredibly fluid. AirTriggers are a game-changer for competitive play.",
             "rating": 5.0,
-            "pros": "Incredible gaming performance, advanced cooling, gaming accessories, high refresh rate",
-            "cons": "Very expensive, heavy, overkill for casual users, bulky design",
+            "pros": "Unrivaled gaming performance, advanced cooling, ultra-responsive display, customizable controls",
+            "cons": "Large and heavy, aggressive gaming aesthetic isn't for everyone, battery life can dip fast during intense gaming",
         },
-
         {
             "gadget_name": "HP Spectre x360 14",
-            "user_name": "Stephanyyy",
-            "title": "Versatile 2-in-1",
-            "content": "The 360-degree hinge is solid and the touchscreen is responsive. Great for both work and entertainment.",
-            "rating": 4.0,
-            "pros": "Versatile 2-in-1 design, good build quality, nice display, decent performance",
-            "cons": "Average battery life, can get warm, pen is sold separately",
+            "user_name": "steph_ux",
+            "title": "Elegance Meets Versatility",
+            "content": "The convertible design is incredibly useful for both design work and presentations. The OLED touch display is absolutely gorgeous, making colors pop. A very well-rounded premium laptop.",
+            "rating": 4.5,
+            "pros": "Stunning OLED touchscreen, flexible 2-in-1 design, premium build materials, comfortable keyboard",
+            "cons": "Battery life could be better for a premium ultrabook, trackpad sometimes overly sensitive, expensive",
         },
-
         {
             "gadget_name": "Lenovo ThinkPad X1 Carbon",
-            "user_name": "Rodri Alexious",
-            "title": "Business Laptop Excellence",
-            "content": "The legendary ThinkPad keyboard and build quality are still unmatched. Perfect for business professionals.",
+            "user_name": "alex_itpro",
+            "title": "The Benchmark for Business Laptops",
+            "content": "The ThinkPad keyboard is still the best in the business, and its legendary durability means it can handle anything I throw at it. Perfect for IT professionals needing reliability and strong security.",
             "rating": 5.0,
-            "pros": "Excellent keyboard, legendary reliability, good security features, lightweight",
-            "cons": "Expensive, limited ports, display could be brighter",
+            "pros": "Industry-leading keyboard, exceptional build quality and durability, strong security features, lightweight",
+            "cons": "Design can feel a bit dated, display could be brighter, speakers are average",
         },
-
         {
             "gadget_name": "Microsoft Surface Laptop 5",
-            "user_name": "Brown Amanda",
-            "title": "Premium Windows Experience",
-            "content": "Beautiful design with the Alcantara finish. Great for productivity work and the display is crisp and colorful.",
+            "user_name": "amanda_biztech",
+            "title": "A Refined Windows Experience",
+            "content": "The Alcantara finish feels luxurious, and the display is incredibly sharp. It's a fantastic laptop for productivity, offering a clean and polished Windows experience. Battery life is decent for a full workday.",
             "rating": 4.0,
-            "pros": "Premium design, good display, solid performance, comfortable keyboard",
-            "cons": "Limited ports, expensive, average battery life",
+            "pros": "Premium design and materials, excellent display, comfortable keyboard, seamless Windows integration",
+            "cons": "Limited port selection, price is on the higher side, average battery life compared to competitors",
         },
-
         {
             "gadget_name": "Acer Swift 3 OLED",
-            "user_name": "Kevin k1m",
-            "title": "Great Value with OLED",
-            "content": "Having an OLED display at this price point is incredible. Perfect for students and casual users.",
+            "user_name": "kevinktech",
+            "title": "OLED at an Unbeatable Price",
+            "content": "Getting an OLED display at this price point is a steal! The colors are incredibly vibrant, making it great for media consumption. Performance is solid for everyday tasks, making it a great value.",
             "rating": 4.0,
-            "pros": "OLED display, good value for money, decent performance, lightweight",
-            "cons": "Build quality could be better, average speakers, limited ports",
+            "pros": "Stunning OLED display, very good value for money, lightweight and portable, decent performance",
+            "cons": "Build quality feels a bit plastic-y, trackpad can be inconsistent, average battery life",
         },
-
         {
             "gadget_name": "Lenovo Tab P12 Pro",
-            "user_name": "Emily Chenny",
-            "title": "Good Android Tablet Alternative",
-            "content": "The OLED display is beautiful and JBL speakers sound great. Good alternative to iPads for Android users.",
+            "user_name": "emily_reviews",
+            "title": "Android's Premium Tablet Contender",
+            "content": "The OLED screen is absolutely gorgeous for streaming movies, and the JBL speakers deliver fantastic audio. It's a strong competitor to other premium tablets, especially with its optional accessories.",
             "rating": 4.0,
-            "pros": "Beautiful OLED display, good speakers, Android flexibility, reasonable price",
-            "cons": "Android tablet app ecosystem, performance could be better",
+            "pros": "Brilliant OLED display, excellent audio quality, good battery life, versatile for entertainment",
+            "cons": "Android tablet app ecosystem still lags behind iPadOS, processor could be more powerful for the price",
         },
-
         {
             "gadget_name": "Amazon Fire Max 11",
-            "user_name": "Jenniwhite",
-            "title": "Budget Tablet Champion",
-            "content": "For the price, you can't beat this tablet. Perfect for reading, streaming, and basic tasks. Great for kids too.",
-            "rating": 3.0,
-            "pros": "Very affordable, good battery life, decent display, Amazon ecosystem integration",
-            "cons": "Limited app store, performance is basic, build quality is average",
+            "user_name": "jen_socialtech",
+            "title": "Budget-Friendly Entertainment Hub",
+            "content": "For the price, this tablet is unbeatable for casual use like reading, Browse, and streaming. It's sturdy enough for kids and integrates perfectly with Amazon's services. Don't expect top-tier performance.",
+            "rating": 3.5,
+            "pros": "Extremely affordable, long battery life, good for media consumption, sturdy build",
+            "cons": "Limited Appstore, performance can be sluggish, basic camera quality, lots of Amazon ads",
         },
-
         {
             "gadget_name": "Xiaomi Pad 6",
-            "user_name": "Robert L33",
-            "title": "Flagship Performance at Mid-Range Price",
-            "content": "Impressive performance and display quality for the price. Great for gaming and multimedia consumption.",
-            "rating": 4.0,
-            "pros": "Great performance for price, high refresh rate display, good build quality",
-            "cons": "MIUI can be confusing, limited availability, average cameras",
+            "user_name": "robert_techanalyst",
+            "title": "Unmatched Performance for the Price",
+            "content": "This tablet offers flagship-level performance and a high refresh rate display at a mid-range price. It's excellent for gaming and everyday productivity, providing incredible bang for your buck.",
+            "rating": 4.5,
+            "pros": "Exceptional performance for its price, smooth 144Hz display, solid build quality, good battery life",
+            "cons": "MIUI can be somewhat intrusive, camera is only adequate, no expandable storage",
         },
-
         {
             "gadget_name": "Sony Xperia 1 V",
-            "user_name": "Maria Gonza",
-            "title": "Content Creator's Dream",
-            "content": "The professional camera controls and 4K display make this perfect for content creation. Video recording capabilities are exceptional.",
-            "rating": 4.0,
-            "pros": "Professional camera controls, 4K display, excellent video recording, clean software",
-            "cons": "Very expensive, niche appeal, battery life could be better",
+            "user_name": "mariacreates",
+            "title": "Filmmaker's Dream Phone",
+            "content": "The 4K OLED display and manual camera controls are a content creator's paradise. I can shoot and edit high-quality video directly on my phone. It's a niche product, but outstanding for its purpose.",
+            "rating": 4.5,
+            "pros": "Pro-grade camera and video features, stunning 4K display, headphone jack, clean Android experience",
+            "cons": "Very expensive, not for general users, battery life can drain quickly with 4K recording",
         },
-
         {
             "gadget_name": "MSI Creator Z16P",
-            "user_name": "danielmartinez",
-            "title": "Creator Workstation",
-            "content": "Perfect for content creation work. The color-accurate display and powerful RTX graphics handle everything I throw at it.",
+            "user_name": "dan_editspro",
+            "title": "Portable Studio Powerhouse",
+            "content": "This laptop handles heavy video rendering and complex graphic design projects with ease. The color-accurate display is essential for my work, and the RTX GPU makes a huge difference. Fans can get loud under load.",
             "rating": 5.0,
-            "pros": "Excellent for content creation, powerful graphics, color-accurate display, good cooling",
-            "cons": "Expensive, heavy, loud fans, poor battery life",
+            "pros": "Exceptional performance for creative tasks, highly color-accurate display, powerful GPU, good cooling",
+            "cons": "Very expensive, heavy and not very portable, fan noise can be distracting, average battery life",
         },
-
         {
             "gadget_name": "ASUS ZenBook 14",
-            "user_name": "Stephanie Davis",
-            "title": "Compact and Capable",
-            "content": "The NumberPad 2.0 is actually quite useful. Great laptop for everyday computing needs with good portability.",
+            "user_name": "steph_ux",
+            "title": "Compact, Stylish, and Surprisingly Capable",
+            "content": "The ZenBook 14 is a beautiful and highly portable laptop. The NumberPad is a neat feature that actually comes in handy, and it performs well for everyday tasks. Great for students and light professionals.",
             "rating": 4.0,
-            "pros": "Compact design, innovative NumberPad, good performance, affordable",
-            "cons": "Display could be brighter, average speakers, limited ports",
+            "pros": "Sleek and portable design, innovative NumberPad, good keyboard, decent performance for its class",
+            "cons": "Display could be brighter, speakers are average, battery life is decent but not class-leading",
         },
-
         {
             "gadget_name": "ASUS ROG Flow Z13",
-            "user_name": "David Wilson",
-            "title": "Gaming Tablet Innovation",
-            "content": "Unique concept that actually works. Gaming performance is solid and the detachable keyboard is well-designed.",
+            "user_name": "johndigital",
+            "title": "The Tablet That Games!",
+            "content": "This is a truly innovative device. The concept of a gaming tablet works surprisingly well, and it can handle modern titles thanks to the powerful internals. It's a niche product, but a very cool one.",
             "rating": 4.0,
-            "pros": "Unique gaming tablet design, good performance, innovative concept, portable gaming",
-            "cons": "Very expensive, limited battery for gaming, niche market appeal",
+            "pros": "Unique gaming tablet concept, surprisingly good performance for its size, very portable, good display",
+            "cons": "Expensive, battery life is limited when gaming, design might be too 'gamer' for some",
         },
-
         {
             "gadget_name": "Huawei MatePad Pro 12.6",
-            "user_name": "Rodri Alexious",
-            "title": "Impressive Despite Limitations",
-            "content": "Great hardware and display, but the software limitations due to Google services make it challenging for some users.",
+            "user_name": "alex_itpro",
+            "title": "Impressive Hardware, Software Holds It Back",
+            "content": "The OLED display is stunning, and the hardware is truly premium. However, the lack of Google Mobile Services is a significant hurdle for Western users. HarmonyOS is capable, but the app gap is real.",
             "rating": 3.0,
-            "pros": "Beautiful OLED display, good build quality, M-Pencil support, competitive pricing",
-            "cons": "Limited app ecosystem, no Google services, software restrictions",
+            "pros": "Gorgeous OLED display, premium build quality, M-Pencil support, good performance",
+            "cons": "No Google services (major drawback), app ecosystem is limited, HarmonyOS still developing",
         },
-
         {
             "gadget_name": "OPPO Pad Air",
-            "user_name": "Jenniwhite",
-            "title": "Stylish Budget Option",
-            "content": "Nice design and decent performance for basic tablet tasks. Good for streaming and light productivity work.",
-            "rating": 3.0,
-            "pros": "Attractive design, reasonable price, decent display, good for basic tasks",
-            "cons": "Limited performance, average build quality, basic cameras",
+            "user_name": "jen_socialtech",
+            "title": "Stylish and Affordable for Casual Use",
+            "content": "This tablet looks great and is super lightweight, making it easy to carry around. It's perfect for media consumption and light Browse. Don't expect blazing performance for heavy tasks, but it's great value.",
+            "rating": 3.5,
+            "pros": "Attractive design, very lightweight, decent display for the price, good for media",
+            "cons": "Performance is average, cameras are basic, not ideal for demanding applications",
         },
     ]
-    
+
     for review_data in sample_reviews:
-        # Get gadget
         gadget_name = review_data.pop("gadget_name")
         user_name = review_data.pop("user_name")
-        
+
         gadget = None
         for g in created_gadgets:
             if g.name == gadget_name:
                 gadget = g
                 break
-                
+
         if not gadget:
             continue
-            
-        # Get user
+
         user = crud.user.get_by_username(db, username=user_name)
         if not user:
             continue
-            
-        # Check if review already exists
+
         existing_reviews = crud.review.get_reviews_by_gadget(db, gadget_id=gadget.id)
         exists = False
         for r in existing_reviews:
             if r.user_id == user.id:
                 exists = True
                 break
-                
+
         if not exists:
             logger.info(f"Creating review for {gadget_name} by {user_name}")
             review_in = schemas.ReviewCreate(gadget_id=gadget.id, **review_data)
@@ -1101,16 +1062,16 @@ def main() -> None:
     Main function to initialize database.
     """
     logger.info("Creating initial data")
-    
-    # Create database tables
+
+    # Buat tabel database
     Base.metadata.create_all(bind=engine)
-    
-    # Create session
+
+    # Buat session
     db = SessionLocal()
-    
-    # Initialize database with sample data
+
+    # Inisialisasi database dengan data awal
     init_db(db)
-    
+
     logger.info("Initial data created")
 
 

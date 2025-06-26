@@ -181,7 +181,7 @@ def create_review(
     """
     Create a new review.
     """
-    # Check if gadget exists
+    # Mengecek apakah gadget yang direview ada
     gadget = crud.gadget.get(db, id=review_in.gadget_id)
     if not gadget:
         raise HTTPException(

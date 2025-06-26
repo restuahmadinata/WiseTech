@@ -10,7 +10,7 @@ from passlib.context import CryptContext
 
 from app.core.config import settings
 
-# Password hashing context
+# Hashing password menggunakan algorithm bcrypt
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # JWT algorithm
