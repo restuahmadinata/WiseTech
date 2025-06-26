@@ -14,11 +14,15 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { gadgetAPI } from "../../utils/api";
 import GadgetImage from "./GadgetImage";
+import NoDataModal from "../common/NoDataModal";
 
 const Smartphones = () => {
   const [smartphones, setSmartphones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showNoDataModal, setShowNoDataModal] = useState(false);
+  const [hasUserFiltered, setHasUserFiltered] = useState(false); // Track if user has applied filters
+  const [isInitialLoad, setIsInitialLoad] = useState(true); // Track initial load
   const [filters, setFilters] = useState({
     brands: [],
     minPrice: 0,
@@ -35,6 +39,13 @@ const Smartphones = () => {
   useEffect(() => {
     fetchSmartphones();
   }, [filters]);
+
+  // Reset states when component unmounts
+  useEffect(() => {
+    return () => {
+      setShowNoDataModal(false);
+    };
+  }, []);
 
   const fetchSmartphones = async () => {
     try {
@@ -67,6 +78,11 @@ const Smartphones = () => {
       smartphonesData = applySorting(smartphonesData, filters.sortBy);
 
       setSmartphones(smartphonesData);
+
+      // Only show modal if user has filtered and no results found (not on initial load)
+      if (hasUserFiltered && smartphonesData.length === 0 && !isInitialLoad) {
+        setShowNoDataModal(true);
+      }
     } catch (err) {
       console.error("Error fetching smartphones:", err);
       setError("Failed to load smartphones. Please try again later.");
@@ -161,6 +177,7 @@ const Smartphones = () => {
       setSmartphones(mockSmartphones);
     } finally {
       setLoading(false);
+      setIsInitialLoad(false); // Mark that initial load is complete
     }
   };
 
@@ -210,6 +227,7 @@ const Smartphones = () => {
   // Function to handle filter changes
   const handleFilterChange = (e, filterType) => {
     const { value, checked } = e.target;
+    setHasUserFiltered(true); // Mark that user has filtered
 
     if (filterType === "brand") {
       setFilters((prev) => {
@@ -229,6 +247,7 @@ const Smartphones = () => {
 
   // Function to apply price filter
   const applyPriceFilter = () => {
+    setHasUserFiltered(true); // Mark that user has filtered
     setFilters((prev) => ({
       ...prev,
       minPrice: priceInputs.minPrice,
@@ -477,55 +496,112 @@ const Smartphones = () => {
 
             {/* Products */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {smartphones.map((smartphone) => (
-                <Link
-                  to={`/gadget/${smartphone.id}`}
-                  key={smartphone.id}
-                  className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full"
-                >
-                  <GadgetImage
-                    src={smartphone.image_url || smartphone.image}
-                    alt={smartphone.name}
-                    gadgetName={smartphone.name}
-                    size="grid"
-                    className="group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="p-5 flex-grow flex flex-col">
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-900 group-hover:text-indigo-600 transition-colors duration-150">
-                        {smartphone.name}
-                      </h3>
-                      <p className="mt-1 text-sm text-gray-500">
-                        {smartphone.brand}
-                      </p>
-                      {smartphone.operating_system && (
-                        <p className="mt-1 text-xs text-green-600 font-medium">
-                          {smartphone.operating_system}
+              {smartphones.length > 0
+                ? smartphones.map((smartphone) => (
+                    <Link
+                      to={`/gadget/${smartphone.id}`}
+                      key={smartphone.id}
+                      className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full"
+                    >
+                      <GadgetImage
+                        src={smartphone.image_url || smartphone.image}
+                        alt={smartphone.name}
+                        gadgetName={smartphone.name}
+                        size="grid"
+                        className="group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="p-5 flex-grow flex flex-col">
+                        <div>
+                          <h3 className="text-lg font-medium text-gray-900 group-hover:text-indigo-600 transition-colors duration-150">
+                            {smartphone.name}
+                          </h3>
+                          <p className="mt-1 text-sm text-gray-500">
+                            {smartphone.brand}
+                          </p>
+                          {smartphone.operating_system && (
+                            <p className="mt-1 text-xs text-green-600 font-medium">
+                              {smartphone.operating_system}
+                            </p>
+                          )}
+                        </div>
+                        <div className="mt-2 flex items-center">
+                          <div className="flex items-center">
+                            {renderStars(
+                              Math.round(smartphone.average_rating || 0)
+                            )}
+                          </div>
+                          <p className="ml-1 text-sm text-gray-500">
+                            {(smartphone.average_rating || 0).toFixed(1)}
+                          </p>
+                        </div>
+                        <p className="mt-2 text-sm text-gray-700 line-clamp-2">
+                          {smartphone.description}
                         </p>
-                      )}
-                    </div>
-                    <div className="mt-2 flex items-center">
-                      <div className="flex items-center">
-                        {renderStars(
-                          Math.round(smartphone.average_rating || 0)
-                        )}
+                        <div className="mt-auto pt-4">
+                          <p className="font-medium text-gray-900">
+                            ${smartphone.price}
+                          </p>
+                        </div>
                       </div>
-                      <p className="ml-1 text-sm text-gray-500">
-                        {(smartphone.average_rating || 0).toFixed(1)}
+                    </Link>
+                  ))
+                : !loading && (
+                    <div className="col-span-full text-center py-12">
+                      <div className="mx-auto h-24 w-24 text-gray-400 mb-4">
+                        <svg
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M12 18h.01M8 21h8a1 1 0 001-1V4a1 1 0 00-1-1H8a1 1 0 00-1 1v16a1 1 0 001 1z"
+                          />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                        No Smartphones Found
+                      </h3>
+                      <p className="text-gray-500 mb-4">
+                        No smartphones match your current filters.
                       </p>
+                      <button
+                        onClick={() => setShowNoDataModal(true)}
+                        className="text-indigo-600 hover:text-indigo-500 font-medium"
+                      >
+                        View Details
+                      </button>
                     </div>
-                    <p className="mt-2 text-sm text-gray-700 line-clamp-2">
-                      {smartphone.description}
-                    </p>
-                    <div className="mt-auto pt-4">
-                      <p className="font-medium text-gray-900">
-                        ${smartphone.price}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+                  )}
             </div>
+
+            {/* No Data Modal */}
+            <NoDataModal
+              show={showNoDataModal}
+              onClose={() => setShowNoDataModal(false)}
+              title="No Smartphones Available"
+              message="We couldn't find any smartphones matching your criteria. This might be because the data is still loading, or there are currently no smartphones in our database that match your selected filters."
+              icon="smartphone"
+              actionButton={{
+                text: "Clear All Filters",
+                onClick: () => {
+                  setFilters({
+                    brands: [],
+                    minPrice: 0,
+                    maxPrice: "",
+                    sortBy: "newest",
+                  });
+                  setPriceInputs({
+                    minPrice: 0,
+                    maxPrice: "",
+                  });
+                  setHasUserFiltered(false); // Reset filter flag
+                  setShowNoDataModal(false);
+                },
+              }}
+            />
           </div>
         </div>
       </div>

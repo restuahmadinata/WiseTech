@@ -21,6 +21,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { gadgetAPI } from "../../utils/api";
 import GadgetImage from "./GadgetImage";
+import NoDataModal from "../common/NoDataModal";
 
 const Search = () => {
   const location = useLocation();
@@ -32,6 +33,8 @@ const Search = () => {
   const [popularGadgets, setPopularGadgets] = useState([]);
   const [isLoadingPopular, setIsLoadingPopular] = useState(true);
   const [showResults, setShowResults] = useState(false);
+  const [showNoDataModal, setShowNoDataModal] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true); // Track initial load
 
   // Check for URL query parameter on component mount
   useEffect(() => {
@@ -134,14 +137,25 @@ const Search = () => {
               gadget.category.toLowerCase() === selectedCategory.toLowerCase()
           );
         }
-
         setSearchResults(results || []);
+
+        // Show modal if no results found and user is actively searching or filtering (not on initial load)
+        const isUserInteracting =
+          searchQuery.length >= 2 || selectedCategory !== "all";
+        if (
+          (results || []).length === 0 &&
+          isUserInteracting &&
+          !isInitialLoad
+        ) {
+          setShowNoDataModal(true);
+        }
       } catch (error) {
         console.error("Search/filter error:", error);
         setError("Failed to load gadgets. Please try again.");
         setSearchResults([]);
       } finally {
         setIsSearching(false);
+        setIsInitialLoad(false); // Mark that initial load is complete
       }
     };
 
@@ -360,52 +374,90 @@ const Search = () => {
           {/* Search results display */}
           {showResults &&
             (searchQuery.length >= 1 || selectedCategory !== "all") && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {searchResults.map((gadget) => (
-                  <Link
-                    to={`/gadget/${gadget.id}`}
-                    key={gadget.id}
-                    className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full"
-                  >
-                    <GadgetImage
-                      src={gadget.image_url}
-                      alt={gadget.name}
-                      gadgetName={gadget.name}
-                      size="grid"
-                      className="group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="p-5 flex-grow flex flex-col">
-                      <div>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 mb-2">
-                          {gadget.category}
-                        </span>
-                        <h3 className="text-lg font-medium text-gray-900 group-hover:text-indigo-600 transition-colors duration-150">
-                          {gadget.name}
-                        </h3>
-                        <p className="mt-1 text-sm text-gray-500">
-                          {gadget.brand}
-                        </p>
-                      </div>
-                      <div className="mt-2 flex items-center">
-                        <div className="flex items-center">
-                          {renderStars(Math.round(gadget.average_rating || 0))}
-                        </div>
-                        <p className="ml-1 text-sm text-gray-500">
-                          {(gadget.average_rating || 0).toFixed(1)}
-                        </p>
-                      </div>
-                      <p className="mt-2 text-sm text-gray-700 line-clamp-2">
-                        {gadget.description}
-                      </p>
-                      <div className="mt-auto pt-4">
-                        <p className="font-medium text-gray-900">
-                          ${gadget.price}
-                        </p>
-                      </div>
+              <>
+                {searchResults.length === 0 ? (
+                  <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+                    <div className="text-gray-400 mb-4">
+                      <svg
+                        className="mx-auto h-12 w-12"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
+                      </svg>
                     </div>
-                  </Link>
-                ))}
-              </div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      No Results Found
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      We couldn't find any gadgets matching your search. Try
+                      different keywords or browse our categories.
+                    </p>
+                    <button
+                      type="button"
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                      onClick={() => setShowNoDataModal(true)}
+                    >
+                      View Search Tips
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {searchResults.map((gadget) => (
+                      <Link
+                        to={`/gadget/${gadget.id}`}
+                        key={gadget.id}
+                        className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full"
+                      >
+                        <GadgetImage
+                          src={gadget.image_url}
+                          alt={gadget.name}
+                          gadgetName={gadget.name}
+                          size="grid"
+                          className="group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="p-5 flex-grow flex flex-col">
+                          <div>
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 mb-2">
+                              {gadget.category}
+                            </span>
+                            <h3 className="text-lg font-medium text-gray-900 group-hover:text-indigo-600 transition-colors duration-150">
+                              {gadget.name}
+                            </h3>
+                            <p className="mt-1 text-sm text-gray-500">
+                              {gadget.brand}
+                            </p>
+                          </div>
+                          <div className="mt-2 flex items-center">
+                            <div className="flex items-center">
+                              {renderStars(
+                                Math.round(gadget.average_rating || 0)
+                              )}
+                            </div>
+                            <p className="ml-1 text-sm text-gray-500">
+                              {(gadget.average_rating || 0).toFixed(1)}
+                            </p>
+                          </div>
+                          <p className="mt-2 text-sm text-gray-700 line-clamp-2">
+                            {gadget.description}
+                          </p>
+                          <div className="mt-auto pt-4">
+                            <p className="font-medium text-gray-900">
+                              ${gadget.price}
+                            </p>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
 
           {/* Featured and all gadgets section when no specific search */}
@@ -523,16 +575,58 @@ const Search = () => {
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
                       No Gadgets Available
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 mb-4">
                       No gadgets are currently available. Please check back
                       later or contact support if this issue persists.
                     </p>
+                    <button
+                      type="button"
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                      onClick={() => setShowNoDataModal(true)}
+                    >
+                      Get Help
+                    </button>
                   </div>
                 )}
               </div>
             </div>
           )}
         </div>
+
+        {/* NoDataModal */}
+        <NoDataModal
+          show={showNoDataModal}
+          onClose={() => setShowNoDataModal(false)}
+          title={
+            searchQuery.length >= 2
+              ? "No Search Results"
+              : "No Gadgets Available"
+          }
+          message={
+            searchQuery.length >= 2
+              ? `We couldn't find any gadgets matching "${searchQuery}"${
+                  selectedCategory !== "all" ? ` in ${selectedCategory}` : ""
+                }. Try using different keywords, check spelling, or browse our categories.`
+              : selectedCategory !== "all"
+              ? `No ${selectedCategory.toLowerCase()} are currently available. Try browsing other categories or check back later.`
+              : "No gadgets are currently available in our database. Please check back later or contact support."
+          }
+          icon="search"
+          actionButton={{
+            text:
+              searchQuery.length >= 2 ? "Clear Search" : "Browse Categories",
+            onClick: () => {
+              if (searchQuery.length >= 2) {
+                clearSearch();
+              } else {
+                setSelectedCategory("all");
+                setSearchQuery("");
+                setShowResults(false);
+              }
+              setShowNoDataModal(false);
+            },
+          }}
+        />
       </div>
     </div>
   );

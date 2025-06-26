@@ -19,16 +19,18 @@ class Settings(BaseSettings):
     
     # JWT token settings
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
+
     
     # Database settings
-    # MySQL configuration (comment out if using SQLite)
+    
+    # MySQL configuration
     # MYSQL_SERVER: str = "localhost"
     # MYSQL_USER: str = "root"
     # MYSQL_PASSWORD: str = ""
     # MYSQL_DB: str = "wisetech_db"
     # MYSQL_PORT: int = 3306
     
-    # SQLite configuration (default for development)
+    # SQLite configuration
     DATABASE_URL: str = "sqlite:///./wisetech.db"
     
     # MySQL URL (uncomment if using MySQL)

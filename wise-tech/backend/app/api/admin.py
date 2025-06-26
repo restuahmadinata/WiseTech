@@ -32,12 +32,37 @@ def read_users(
 def create_user(
     *,
     db: Session = Depends(deps.get_db),
-    user_in: schemas.UserCreate,
+    user_in: schemas.UserAdminCreate,
     current_user: models.User = Depends(deps.get_current_active_admin),
 ) -> Any:
     """
     Create new user (admin only).
     """
+    # Validate required fields
+    if not user_in.email or not user_in.email.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email is required",
+        )
+    
+    if not user_in.username or not user_in.username.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username is required",
+        )
+    
+    if not user_in.password or not user_in.password.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password is required",
+        )
+    
+    if not user_in.full_name or not user_in.full_name.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Full name is required",
+        )
+    
     # Check if user with email already exists
     existing_user = crud.user.get_by_email(db, email=user_in.email)
     if existing_user:
@@ -54,7 +79,7 @@ def create_user(
             detail="Username already taken",
         )
     
-    user = crud.user.create(db, obj_in=user_in)
+    user = crud.user.create_admin_user(db, obj_in=user_in)
     return user
 
 

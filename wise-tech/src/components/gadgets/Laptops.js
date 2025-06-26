@@ -14,11 +14,15 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { gadgetAPI } from "../../utils/api";
 import GadgetImage from "./GadgetImage";
+import NoDataModal from "../common/NoDataModal";
 
 const Laptops = () => {
   const [laptops, setLaptops] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showNoDataModal, setShowNoDataModal] = useState(false);
+  const [hasUserFiltered, setHasUserFiltered] = useState(false); // Track if user has applied filters
+  const [isInitialLoad, setIsInitialLoad] = useState(true); // Track initial load
   const [filters, setFilters] = useState({
     brands: [],
     minPrice: 0,
@@ -35,6 +39,13 @@ const Laptops = () => {
   useEffect(() => {
     fetchLaptops();
   }, [filters]);
+
+  // Reset states when component unmounts
+  useEffect(() => {
+    return () => {
+      setShowNoDataModal(false);
+    };
+  }, []);
 
   const fetchLaptops = async () => {
     try {
@@ -67,6 +78,11 @@ const Laptops = () => {
       laptopsData = applySorting(laptopsData, filters.sortBy);
 
       setLaptops(laptopsData);
+
+      // Only show modal if user has filtered and no results found (not on initial load)
+      if (hasUserFiltered && laptopsData.length === 0 && !isInitialLoad) {
+        setShowNoDataModal(true);
+      }
     } catch (err) {
       console.error("Error fetching laptops:", err);
       setError("Failed to load laptops. Please try again later.");
@@ -159,6 +175,7 @@ const Laptops = () => {
       setLaptops(mockLaptops);
     } finally {
       setLoading(false);
+      setIsInitialLoad(false); // Mark that initial load is complete
     }
   };
 
@@ -208,6 +225,7 @@ const Laptops = () => {
   // Function to handle filter changes
   const handleFilterChange = (e, filterType) => {
     const { value, checked } = e.target;
+    setHasUserFiltered(true); // Mark that user has filtered
 
     if (filterType === "brand") {
       setFilters((prev) => {
@@ -227,6 +245,7 @@ const Laptops = () => {
 
   // Function to apply price filter
   const applyPriceFilter = () => {
+    setHasUserFiltered(true); // Mark that user has filtered
     setFilters((prev) => ({
       ...prev,
       minPrice: priceInputs.minPrice,
@@ -475,53 +494,112 @@ const Laptops = () => {
 
             {/* Products */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {laptops.map((laptop) => (
-                <Link
-                  to={`/gadget/${laptop.id}`}
-                  key={laptop.id}
-                  className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full"
-                >
-                  <GadgetImage
-                    src={laptop.image_url || laptop.image}
-                    alt={laptop.name}
-                    gadgetName={laptop.name}
-                    size="grid"
-                    className="group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="p-5 flex-grow flex flex-col">
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-900 group-hover:text-indigo-600 transition-colors duration-150">
-                        {laptop.name}
-                      </h3>
-                      <p className="mt-1 text-sm text-gray-500">
-                        {laptop.brand}
-                      </p>
-                      {laptop.processor && (
-                        <p className="mt-1 text-xs text-blue-600 font-medium">
-                          {laptop.processor}
+              {laptops.length > 0
+                ? laptops.map((laptop) => (
+                    <Link
+                      to={`/gadget/${laptop.id}`}
+                      key={laptop.id}
+                      className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full"
+                    >
+                      <GadgetImage
+                        src={laptop.image_url || laptop.image}
+                        alt={laptop.name}
+                        gadgetName={laptop.name}
+                        size="grid"
+                        className="group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="p-5 flex-grow flex flex-col">
+                        <div>
+                          <h3 className="text-lg font-medium text-gray-900 group-hover:text-indigo-600 transition-colors duration-150">
+                            {laptop.name}
+                          </h3>
+                          <p className="mt-1 text-sm text-gray-500">
+                            {laptop.brand}
+                          </p>
+                          {laptop.processor && (
+                            <p className="mt-1 text-xs text-blue-600 font-medium">
+                              {laptop.processor}
+                            </p>
+                          )}
+                        </div>
+                        <div className="mt-2 flex items-center">
+                          <div className="flex items-center">
+                            {renderStars(
+                              Math.round(laptop.average_rating || 0)
+                            )}
+                          </div>
+                          <p className="ml-1 text-sm text-gray-500">
+                            {(laptop.average_rating || 0).toFixed(1)}
+                          </p>
+                        </div>
+                        <p className="mt-2 text-sm text-gray-700 line-clamp-2">
+                          {laptop.description}
                         </p>
-                      )}
-                    </div>
-                    <div className="mt-2 flex items-center">
-                      <div className="flex items-center">
-                        {renderStars(Math.round(laptop.average_rating || 0))}
+                        <div className="mt-auto pt-4">
+                          <p className="font-medium text-gray-900">
+                            ${laptop.price}
+                          </p>
+                        </div>
                       </div>
-                      <p className="ml-1 text-sm text-gray-500">
-                        {(laptop.average_rating || 0).toFixed(1)}
+                    </Link>
+                  ))
+                : !loading && (
+                    <div className="col-span-full text-center py-12">
+                      <div className="mx-auto h-24 w-24 text-gray-400 mb-4">
+                        <svg
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                          />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                        No Laptops Found
+                      </h3>
+                      <p className="text-gray-500 mb-4">
+                        No laptops match your current filters.
                       </p>
+                      <button
+                        onClick={() => setShowNoDataModal(true)}
+                        className="text-indigo-600 hover:text-indigo-500 font-medium"
+                      >
+                        View Details
+                      </button>
                     </div>
-                    <p className="mt-2 text-sm text-gray-700 line-clamp-2">
-                      {laptop.description}
-                    </p>
-                    <div className="mt-auto pt-4">
-                      <p className="font-medium text-gray-900">
-                        ${laptop.price}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+                  )}
             </div>
+
+            {/* No Data Modal */}
+            <NoDataModal
+              show={showNoDataModal}
+              onClose={() => setShowNoDataModal(false)}
+              title="No Laptops Available"
+              message="We couldn't find any laptops matching your criteria. This might be because the data is still loading, or there are currently no laptops in our database that match your selected filters."
+              icon="laptop"
+              actionButton={{
+                text: "Clear All Filters",
+                onClick: () => {
+                  setFilters({
+                    brands: [],
+                    minPrice: 0,
+                    maxPrice: "",
+                    sortBy: "newest",
+                  });
+                  setPriceInputs({
+                    minPrice: 0,
+                    maxPrice: "",
+                  });
+                  setHasUserFiltered(false); // Reset filter flag
+                  setShowNoDataModal(false);
+                },
+              }}
+            />
           </div>
         </div>
       </div>

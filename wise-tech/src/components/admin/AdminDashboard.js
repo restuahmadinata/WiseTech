@@ -3,7 +3,7 @@
  */
 import React, { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
-import { authUtils, adminAPI } from "../../utils/api";
+import { authUtils, adminAPI, authAPI } from "../../utils/api";
 import Alert from "../common/Alert";
 
 const AdminDashboard = () => {
@@ -19,6 +19,9 @@ const AdminDashboard = () => {
   const [error, setError] = useState("");
   const [dataLoading, setDataLoading] = useState(false);
   const [alert, setAlert] = useState({ show: false, type: "", message: "" });
+
+  // Admin user info state
+  const [currentAdmin, setCurrentAdmin] = useState(null);
 
   // Modal state for viewing review details
   const [selectedReview, setSelectedReview] = useState(null);
@@ -40,6 +43,7 @@ const AdminDashboard = () => {
     email: "",
     username: "",
     password: "",
+    bio: "",
     is_admin: false,
   });
 
@@ -75,6 +79,7 @@ const AdminDashboard = () => {
     image_url: "",
     release_date: "",
   });
+  const [addGadgetFormErrors, setAddGadgetFormErrors] = useState({});
 
   // Logout confirmation state
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -392,6 +397,63 @@ const AdminDashboard = () => {
     setShowDeleteModal(false);
   };
 
+  // Validate Add Gadget Form
+  const validateAddGadgetForm = () => {
+    const errors = {};
+
+    if (!addGadgetForm.name.trim()) {
+      errors.name = "Name is required";
+    }
+
+    if (!addGadgetForm.category) {
+      errors.category = "Category is required";
+    }
+
+    if (!addGadgetForm.brand.trim()) {
+      errors.brand = "Brand is required";
+    }
+
+    if (!addGadgetForm.price || parseFloat(addGadgetForm.price) <= 0) {
+      errors.price = "Valid price is required";
+    }
+
+    if (!addGadgetForm.description.trim()) {
+      errors.description = "Description is required";
+    }
+
+    if (!addGadgetForm.image_url.trim()) {
+      errors.image_url = "Image URL is required";
+    } else {
+      // Basic URL validation
+      try {
+        new URL(addGadgetForm.image_url);
+      } catch {
+        errors.image_url = "Valid image URL is required";
+      }
+    }
+
+    if (!addGadgetForm.release_date) {
+      errors.release_date = "Release date is required";
+    }
+
+    setAddGadgetFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Check if Add Gadget form is valid (for button disable)
+  const isAddGadgetFormValid = () => {
+    return (
+      addGadgetForm.name.trim() &&
+      addGadgetForm.category &&
+      addGadgetForm.brand.trim() &&
+      addGadgetForm.price &&
+      parseFloat(addGadgetForm.price) > 0 &&
+      addGadgetForm.description.trim() &&
+      addGadgetForm.image_url.trim() &&
+      addGadgetForm.release_date
+    );
+  };
+
   // API Functions
   const fetchDashboardStats = async () => {
     try {
@@ -498,11 +560,55 @@ const AdminDashboard = () => {
 
   const handleSaveNewUser = async () => {
     try {
+      // Validate required fields
+      if (!addUserForm.full_name || !addUserForm.full_name.trim()) {
+        showErrorAlert("Full name is required");
+        return;
+      }
+
+      if (!addUserForm.email || !addUserForm.email.trim()) {
+        showErrorAlert("Email is required");
+        return;
+      }
+
+      if (!addUserForm.username || !addUserForm.username.trim()) {
+        showErrorAlert("Username is required");
+        return;
+      }
+
+      if (!addUserForm.password || !addUserForm.password.trim()) {
+        showErrorAlert("Password is required");
+        return;
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(addUserForm.email)) {
+        showErrorAlert("Please enter a valid email address");
+        return;
+      }
+
+      // Validate password strength
+      if (addUserForm.password.length < 6) {
+        showErrorAlert("Password must be at least 6 characters long");
+        return;
+      }
+
       setDataLoading(true);
       const response = await adminAPI.createUser(addUserForm);
       setUsers([...users, response]);
       setShowAddUserModal(false);
       showSuccessAlert("User created successfully!");
+
+      // Reset form
+      setAddUserForm({
+        full_name: "",
+        email: "",
+        username: "",
+        password: "",
+        bio: "",
+        is_admin: false,
+      });
 
       // Refresh stats
       const calculatedStats = calculateStats();
@@ -668,6 +774,12 @@ const AdminDashboard = () => {
   };
 
   const handleSaveNewGadget = async () => {
+    // Validate form first
+    if (!validateAddGadgetForm()) {
+      showErrorAlert("Please fill in all required fields correctly");
+      return;
+    }
+
     try {
       setDataLoading(true);
 
@@ -715,6 +827,14 @@ const AdminDashboard = () => {
     try {
       setDataLoading(true);
 
+      // Validate price is not negative
+      const price = parseFloat(editGadgetForm.price);
+      if (isNaN(price) || price < 0) {
+        showErrorAlert("Price must be a valid positive number");
+        setDataLoading(false);
+        return;
+      }
+
       // Convert release_date to proper datetime format
       let releaseDatetime;
       if (editGadgetForm.release_date) {
@@ -731,7 +851,7 @@ const AdminDashboard = () => {
         brand: editGadgetForm.brand,
         category: editGadgetForm.category,
         description: editGadgetForm.description,
-        price: parseFloat(editGadgetForm.price) || 0,
+        price: price,
         image_url: editGadgetForm.image_url || null,
         release_date: releaseDatetime,
       };
@@ -795,6 +915,7 @@ const AdminDashboard = () => {
       email: "",
       username: "",
       password: "",
+      bio: "",
       is_admin: false,
     });
   };
@@ -833,6 +954,7 @@ const AdminDashboard = () => {
       image_url: "",
       release_date: "",
     });
+    setAddGadgetFormErrors({});
   };
 
   const closeGadgetModal = () => {
@@ -864,6 +986,132 @@ const AdminDashboard = () => {
 
   const cancelLogout = () => {
     setShowLogoutModal(false);
+  };
+
+  // Function to fetch current admin information
+  const fetchCurrentAdminInfo = async () => {
+    try {
+      console.log("🔄 AdminDashboard - Fetching current admin info...");
+
+      // Get admin info from localStorage first
+      const userInfo = authUtils.getUserInfo();
+      if (userInfo) {
+        setCurrentAdmin({
+          id: userInfo.id,
+          username: userInfo.username,
+          email: userInfo.email,
+          full_name: userInfo.full_name,
+          profile_photo: userInfo.profile_photo,
+          last_login:
+            localStorage.getItem("adminLastLogin") || new Date().toISOString(),
+        });
+        console.log("✅ AdminDashboard - Admin info loaded:", userInfo);
+      }
+
+      // Optionally fetch fresh data from API
+      try {
+        const freshUserInfo = await authAPI.getCurrentUser();
+        if (freshUserInfo && freshUserInfo.is_admin) {
+          setCurrentAdmin({
+            id: freshUserInfo.id,
+            username: freshUserInfo.username,
+            email: freshUserInfo.email,
+            full_name: freshUserInfo.full_name,
+            profile_photo: freshUserInfo.profile_photo,
+            last_login:
+              localStorage.getItem("adminLastLogin") ||
+              new Date().toISOString(),
+          });
+          console.log(
+            "✅ AdminDashboard - Fresh admin info loaded:",
+            freshUserInfo
+          );
+        }
+      } catch (apiError) {
+        console.log(
+          "⚠️ AdminDashboard - Could not fetch fresh admin info, using cached data"
+        );
+      }
+    } catch (error) {
+      console.error("❌ AdminDashboard - Error fetching admin info:", error);
+      // Fallback to basic info from localStorage
+      const userInfo = authUtils.getUserInfo();
+      if (userInfo) {
+        setCurrentAdmin({
+          id: userInfo.id,
+          username: userInfo.username || userInfo.email,
+          email: userInfo.email,
+          full_name: userInfo.full_name || "Admin User",
+          profile_photo: null,
+          last_login:
+            localStorage.getItem("adminLastLogin") || new Date().toISOString(),
+        });
+      }
+    }
+  };
+
+  // Helper function to get admin profile photo URL
+  const getAdminProfilePhotoUrl = (photoPath) => {
+    if (!photoPath) return null;
+    if (photoPath.startsWith("http")) return photoPath; // Already full URL
+    return `http://localhost:8000${photoPath}`; // Add API base URL
+  };
+
+  // Helper function to get admin display name
+  const getAdminDisplayName = () => {
+    if (!currentAdmin) return "Admin";
+    return (
+      currentAdmin.full_name ||
+      currentAdmin.username ||
+      currentAdmin.email ||
+      "Admin"
+    );
+  };
+
+  // Helper function to get admin initials
+  const getAdminInitials = () => {
+    if (!currentAdmin) return "A";
+
+    if (currentAdmin.full_name) {
+      const names = currentAdmin.full_name.split(" ");
+      if (names.length >= 2) {
+        return (names[0][0] + names[1][0]).toUpperCase();
+      }
+      return currentAdmin.full_name[0].toUpperCase();
+    }
+
+    if (currentAdmin.username) {
+      return currentAdmin.username[0].toUpperCase();
+    }
+
+    if (currentAdmin.email) {
+      return currentAdmin.email[0].toUpperCase();
+    }
+
+    return "A";
+  };
+
+  // Helper function to format last login time
+  const formatLastLogin = () => {
+    if (!currentAdmin?.last_login) return "Recently";
+
+    try {
+      const loginDate = new Date(currentAdmin.last_login);
+      const now = new Date();
+      const diffMs = now - loginDate;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+
+      if (diffMins < 1) return "Just now";
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      if (diffDays < 7) return `${diffDays}d ago`;
+
+      return loginDate.toLocaleDateString();
+    } catch (error) {
+      return "Recently";
+    }
   };
 
   // Check if user is admin and fetch data
@@ -913,6 +1161,9 @@ const AdminDashboard = () => {
 
         console.log("✅ AdminDashboard - Admin access granted");
         setIsAuthorized(true);
+
+        // Get current admin info
+        await fetchCurrentAdminInfo();
         await fetchAllData();
       } catch (error) {
         console.error(
@@ -1035,11 +1286,67 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              {/* Admin Profile Info */}
+              {currentAdmin && (
+                <div className="flex items-center space-x-3 bg-white bg-opacity-10 backdrop-blur-sm rounded-lg px-4 py-2">
+                  {/* Profile Photo */}
+                  <div className="flex-shrink-0">
+                    {getAdminProfilePhotoUrl(currentAdmin.profile_photo) ? (
+                      <img
+                        className="h-10 w-10 rounded-full object-cover border-2 border-white shadow-md"
+                        src={getAdminProfilePhotoUrl(
+                          currentAdmin.profile_photo
+                        )}
+                        alt={getAdminDisplayName()}
+                        onError={(e) => {
+                          e.target.style.display = "none";
+                          e.target.nextSibling.style.display = "flex";
+                        }}
+                      />
+                    ) : null}
+                    <div
+                      className={`h-10 w-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center text-white font-semibold text-sm border-2 border-white shadow-md ${
+                        getAdminProfilePhotoUrl(currentAdmin.profile_photo)
+                          ? "hidden"
+                          : "flex"
+                      }`}
+                    >
+                      {getAdminInitials()}
+                    </div>
+                  </div>
+
+                  {/* Admin Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white truncate">
+                      {getAdminDisplayName()}
+                    </p>
+                    <p className="text-xs text-indigo-200 truncate">
+                      Last login: {formatLastLogin()}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Logout Button */}
               <button
                 onClick={handleLogout}
-                className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-2"
               >
-                Logout
+                <svg
+                  className="h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
+                </svg>
+                <span>Logout</span>
               </button>
             </div>
           </div>
@@ -1103,11 +1410,44 @@ const AdminDashboard = () => {
               <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 rounded-xl shadow-lg p-8">
                 <div className="text-center">
                   <h2 className="text-3xl font-bold text-white mb-2">
-                    Welcome to WiseTech Admin Dashboard
+                    {currentAdmin
+                      ? `Welcome back, ${getAdminDisplayName()}!`
+                      : "Welcome to WiseTech Admin Dashboard"}
                   </h2>
                   <p className="text-blue-100 text-lg">
-                    Manage your platform with powerful tools and insights
+                    {currentAdmin
+                      ? "Manage your platform with powerful tools and insights"
+                      : "Loading admin information..."}
                   </p>
+                  {currentAdmin && (
+                    <div className="mt-4 flex items-center justify-center space-x-4 text-blue-100 text-sm">
+                      <div className="flex items-center space-x-1">
+                        <svg
+                          className="h-4 w-4"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        <span>Last login: {formatLastLogin()}</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <svg
+                          className="h-4 w-4"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                          <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                        </svg>
+                        <span>{currentAdmin.email}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1209,7 +1549,7 @@ const AdminDashboard = () => {
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 strokeWidth={2}
-                                d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
+                                d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
                               />
                             </svg>
                           </div>
@@ -2224,6 +2564,23 @@ const AdminDashboard = () => {
                     className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Bio (Optional)
+                  </label>
+                  <textarea
+                    value={addUserForm.bio}
+                    onChange={(e) =>
+                      setAddUserForm({
+                        ...addUserForm,
+                        bio: e.target.value,
+                      })
+                    }
+                    rows="3"
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="Enter user bio..."
+                  />
+                </div>
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -2441,33 +2798,62 @@ const AdminDashboard = () => {
               <div className="space-y-4 max-h-96 overflow-y-auto">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Name
+                    Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={addGadgetForm.name}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setAddGadgetForm({
                         ...addGadgetForm,
                         name: e.target.value,
-                      })
-                    }
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                      });
+                      // Clear error when user starts typing
+                      if (addGadgetFormErrors.name) {
+                        setAddGadgetFormErrors({
+                          ...addGadgetFormErrors,
+                          name: "",
+                        });
+                      }
+                    }}
+                    className={`mt-1 block w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 ${
+                      addGadgetFormErrors.name
+                        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                    }`}
+                    required
                   />
+                  {addGadgetFormErrors.name && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {addGadgetFormErrors.name}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Category
+                    Category <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={addGadgetForm.category}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setAddGadgetForm({
                         ...addGadgetForm,
                         category: e.target.value,
-                      })
-                    }
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                      });
+                      // Clear error when user selects
+                      if (addGadgetFormErrors.category) {
+                        setAddGadgetFormErrors({
+                          ...addGadgetFormErrors,
+                          category: "",
+                        });
+                      }
+                    }}
+                    className={`mt-1 block w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 ${
+                      addGadgetFormErrors.category
+                        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                    }`}
+                    required
                   >
                     <option value="">Select Category</option>
                     <option value="Smartphones">Smartphones</option>
@@ -2477,88 +2863,179 @@ const AdminDashboard = () => {
                     <option value="Audio">Audio</option>
                     <option value="Gaming">Gaming</option>
                   </select>
+                  {addGadgetFormErrors.category && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {addGadgetFormErrors.category}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Brand
+                    Brand <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={addGadgetForm.brand}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setAddGadgetForm({
                         ...addGadgetForm,
                         brand: e.target.value,
-                      })
-                    }
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                      });
+                      // Clear error when user starts typing
+                      if (addGadgetFormErrors.brand) {
+                        setAddGadgetFormErrors({
+                          ...addGadgetFormErrors,
+                          brand: "",
+                        });
+                      }
+                    }}
+                    className={`mt-1 block w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 ${
+                      addGadgetFormErrors.brand
+                        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                    }`}
+                    required
                   />
+                  {addGadgetFormErrors.brand && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {addGadgetFormErrors.brand}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Price ($)
+                    Price ($) <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"
                     step="0.01"
+                    min="0"
                     value={addGadgetForm.price}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setAddGadgetForm({
                         ...addGadgetForm,
                         price: e.target.value,
-                      })
-                    }
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                      });
+                      // Clear error when user starts typing
+                      if (addGadgetFormErrors.price) {
+                        setAddGadgetFormErrors({
+                          ...addGadgetFormErrors,
+                          price: "",
+                        });
+                      }
+                    }}
+                    className={`mt-1 block w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 ${
+                      addGadgetFormErrors.price
+                        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                    }`}
+                    required
                   />
+                  {addGadgetFormErrors.price && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {addGadgetFormErrors.price}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Description
+                    Description <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     value={addGadgetForm.description}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setAddGadgetForm({
                         ...addGadgetForm,
                         description: e.target.value,
-                      })
-                    }
+                      });
+                      // Clear error when user starts typing
+                      if (addGadgetFormErrors.description) {
+                        setAddGadgetFormErrors({
+                          ...addGadgetFormErrors,
+                          description: "",
+                        });
+                      }
+                    }}
                     rows={3}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                    className={`mt-1 block w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 ${
+                      addGadgetFormErrors.description
+                        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                    }`}
+                    required
                   />
+                  {addGadgetFormErrors.description && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {addGadgetFormErrors.description}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Image URL
+                    Image URL <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="url"
                     value={addGadgetForm.image_url}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setAddGadgetForm({
                         ...addGadgetForm,
                         image_url: e.target.value,
-                      })
-                    }
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                      });
+                      // Clear error when user starts typing
+                      if (addGadgetFormErrors.image_url) {
+                        setAddGadgetFormErrors({
+                          ...addGadgetFormErrors,
+                          image_url: "",
+                        });
+                      }
+                    }}
+                    className={`mt-1 block w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 ${
+                      addGadgetFormErrors.image_url
+                        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                    }`}
+                    placeholder="https://example.com/image.jpg"
+                    required
                   />
+                  {addGadgetFormErrors.image_url && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {addGadgetFormErrors.image_url}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Release Date
+                    Release Date <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="date"
                     value={addGadgetForm.release_date}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setAddGadgetForm({
                         ...addGadgetForm,
                         release_date: e.target.value,
-                      })
-                    }
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                      });
+                      // Clear error when user selects
+                      if (addGadgetFormErrors.release_date) {
+                        setAddGadgetFormErrors({
+                          ...addGadgetFormErrors,
+                          release_date: "",
+                        });
+                      }
+                    }}
+                    className={`mt-1 block w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 ${
+                      addGadgetFormErrors.release_date
+                        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                    }`}
                     required
                   />
+                  {addGadgetFormErrors.release_date && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {addGadgetFormErrors.release_date}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 mt-6">
@@ -2570,8 +3047,12 @@ const AdminDashboard = () => {
                 </button>
                 <button
                   onClick={handleSaveNewGadget}
-                  disabled={dataLoading}
-                  className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+                  disabled={dataLoading || !isAddGadgetFormValid()}
+                  className={`px-4 py-2 text-white text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                    dataLoading || !isAddGadgetFormValid()
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-indigo-600 hover:bg-indigo-700"
+                  }`}
                 >
                   {dataLoading ? "Creating..." : "Create Gadget"}
                 </button>
@@ -2652,6 +3133,7 @@ const AdminDashboard = () => {
                   <input
                     type="number"
                     step="0.01"
+                    min="0"
                     value={editGadgetForm.price}
                     onChange={(e) =>
                       setEditGadgetForm({

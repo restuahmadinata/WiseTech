@@ -24,6 +24,16 @@ class UserCreate(UserBase):
     password: str
 
 
+class UserAdminCreate(UserBase):
+    """Schema for admin user creation with admin privileges."""
+    email: EmailStr
+    username: str
+    password: str
+    full_name: str  # Required field
+    bio: Optional[str] = None  # Optional but can be provided
+    is_admin: Optional[bool] = False
+
+
 class UserUpdate(UserBase):
     """Schema for user profile updates."""
     password: Optional[str] = None
