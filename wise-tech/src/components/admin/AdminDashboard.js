@@ -1,7 +1,7 @@
 /**
  * Komponen AdminDashboard - Panel kontrol admin platform
  */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Navigate } from "react-router-dom";
 import { authUtils, adminAPI, authAPI } from "../../utils/api";
 import Alert from "../common/Alert";
@@ -23,9 +23,6 @@ const AdminDashboard = () => {
   // Admin user info state
   const [currentAdmin, setCurrentAdmin] = useState(null);
 
-  // Modal state for viewing review details
-  const [selectedReview, setSelectedReview] = useState(null);
-
   // Modal state for editing user details
   const [selectedUser, setSelectedUser] = useState(null);
   const [showUserModal, setShowUserModal] = useState(false);
@@ -45,16 +42,6 @@ const AdminDashboard = () => {
     password: "",
     bio: "",
     is_admin: false,
-  });
-
-  // Modal state for editing review
-  const [showEditReviewModal, setShowEditReviewModal] = useState(false);
-  const [editReviewForm, setEditReviewForm] = useState({
-    title: "",
-    content: "",
-    rating: 5,
-    pros: "",
-    cons: "",
   });
 
   // Modal state for gadget management
@@ -112,7 +99,7 @@ const AdminDashboard = () => {
   const [reviewSortOrder, setReviewSortOrder] = useState("desc"); // asc, desc
 
   // Calculate stats dynamically from current data
-  const calculateStats = () => {
+  const calculateStats = useCallback(() => {
     const totalGadgets = gadgets.length;
     const totalUsers = users.length;
     const totalReviews = reviews.length;
@@ -122,7 +109,7 @@ const AdminDashboard = () => {
       totalUsers,
       totalReviews,
     };
-  };
+  }, [gadgets.length, users.length, reviews.length]);
 
   // Helper function to sort array by field
   const sortData = (data, sortField, sortOrder) => {
@@ -488,7 +475,7 @@ const AdminDashboard = () => {
     }
   };
 
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
       setDataLoading(true);
       console.log("🔄 AdminDashboard - Fetching reviews...");
@@ -519,7 +506,7 @@ const AdminDashboard = () => {
     } finally {
       setDataLoading(false);
     }
-  };
+  }, []);
 
   const fetchGadgets = async () => {
     try {
@@ -670,45 +657,6 @@ const AdminDashboard = () => {
       "Are you sure you want to delete this user? This action cannot be undone.",
       performDelete
     );
-  };
-
-  // Review CRUD handlers
-  const handleEditReview = (review) => {
-    setSelectedReview(review);
-    setEditReviewForm({
-      title: review.title || "",
-      content: review.content || review.comment || "",
-      rating: review.rating || 5,
-      pros: review.pros || "",
-      cons: review.cons || "",
-    });
-    setShowEditReviewModal(true);
-  };
-
-  const handleSaveReview = async () => {
-    try {
-      setDataLoading(true);
-      const response = await adminAPI.updateReview(
-        selectedReview.id,
-        editReviewForm
-      );
-
-      // Update the review in the list
-      const updatedReviews = reviews.map((review) =>
-        review.id === selectedReview.id ? response : review
-      );
-
-      setReviews(updatedReviews);
-      setShowEditReviewModal(false);
-      showSuccessAlert("Review updated successfully!");
-    } catch (error) {
-      console.error("❌ Error updating review:", error);
-      showErrorAlert(
-        "Failed to update review: " + (error.message || "Unknown error")
-      );
-    } finally {
-      setDataLoading(false);
-    }
   };
 
   const handleDeleteReview = async (reviewId) => {
@@ -931,18 +879,6 @@ const AdminDashboard = () => {
     });
   };
 
-  const closeEditReviewModal = () => {
-    setSelectedReview(null);
-    setShowEditReviewModal(false);
-    setEditReviewForm({
-      title: "",
-      content: "",
-      rating: 5,
-      pros: "",
-      cons: "",
-    });
-  };
-
   const closeAddGadgetModal = () => {
     setShowAddGadgetModal(false);
     setAddGadgetForm({
@@ -993,7 +929,7 @@ const AdminDashboard = () => {
     try {
       console.log("🔄 AdminDashboard - Fetching current admin info...");
 
-      // Get admin info from localStorage first
+      // Mengambil informasi admin dari localStorage
       const userInfo = authUtils.getUserInfo();
       if (userInfo) {
         setCurrentAdmin({
@@ -1091,7 +1027,7 @@ const AdminDashboard = () => {
     return "A";
   };
 
-  // Helper function to format last login time
+  // Helper function untuk format waktu login terakhir
   const formatLastLogin = () => {
     if (!currentAdmin?.last_login) return "Recently";
 
@@ -2465,12 +2401,6 @@ const AdminDashboard = () => {
                                 <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                                   <div className="flex space-x-2 justify-end">
                                     <button
-                                      onClick={() => handleEditReview(review)}
-                                      className="text-blue-600 hover:text-blue-900"
-                                    >
-                                      Edit
-                                    </button>
-                                    <button
                                       onClick={() =>
                                         handleDeleteReview(review.id)
                                       }
@@ -2693,89 +2623,6 @@ const AdminDashboard = () => {
                 </button>
                 <button
                   onClick={handleSaveUser}
-                  disabled={dataLoading}
-                  className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
-                >
-                  {dataLoading ? "Saving..." : "Save Changes"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Review Modal */}
-      {showEditReviewModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Edit Review
-              </h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Title
-                  </label>
-                  <input
-                    type="text"
-                    value={editReviewForm.title}
-                    onChange={(e) =>
-                      setEditReviewForm({
-                        ...editReviewForm,
-                        title: e.target.value,
-                      })
-                    }
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Content
-                  </label>
-                  <textarea
-                    value={editReviewForm.content}
-                    onChange={(e) =>
-                      setEditReviewForm({
-                        ...editReviewForm,
-                        content: e.target.value,
-                      })
-                    }
-                    rows={4}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Rating
-                  </label>
-                  <select
-                    value={editReviewForm.rating}
-                    onChange={(e) =>
-                      setEditReviewForm({
-                        ...editReviewForm,
-                        rating: parseInt(e.target.value),
-                      })
-                    }
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                  >
-                    <option value={1}>1 Star</option>
-                    <option value={2}>2 Stars</option>
-                    <option value={3}>3 Stars</option>
-                    <option value={4}>4 Stars</option>
-                    <option value={5}>5 Stars</option>
-                  </select>
-                </div>
-              </div>
-              <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 mt-6">
-                <button
-                  onClick={closeEditReviewModal}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveReview}
                   disabled={dataLoading}
                   className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
                 >

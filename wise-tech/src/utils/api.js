@@ -18,7 +18,7 @@ const apiCall = async (endpoint, options = {}) => {
     },
   };
 
-  // Add authorization header if token exists
+
   const token = localStorage.getItem("access_token");
   if (token) {
     defaultOptions.headers.Authorization = `Bearer ${token}`;
@@ -41,7 +41,7 @@ const apiCall = async (endpoint, options = {}) => {
 };
 
 /**
- * Authentication APIs
+ * Otentikasi API
  */
 export const authAPI = {
   login: async (credentials) => {
@@ -51,7 +51,7 @@ export const authAPI = {
 
     return apiCall("/api/auth/login", {
       method: "POST",
-      headers: {}, // Remove Content-Type for FormData
+      headers: {},
       body: formData,
     });
   },
@@ -69,7 +69,7 @@ export const authAPI = {
 };
 
 /**
- * Gadget APIs
+ * Gadget APIs 
  */
 export const gadgetAPI = {
   // Get all gadgets with optional filters
@@ -226,14 +226,12 @@ export const reviewAPI = {
     });
   },
 
-  // Delete review
   deleteReview: async (reviewId) => {
     return apiCall(`/api/reviews/${reviewId}`, {
       method: "DELETE",
     });
   },
 
-  // Get user's reviews
   getUserReviews: async () => {
     return apiCall("/api/users/reviews");
   },
@@ -304,7 +302,7 @@ export const userAPI = {
     }
   },
 
-  // Delete profile photo
+
   deleteProfilePhoto: async () => {
     return apiCall("/api/users/profile/photo", {
       method: "DELETE",
@@ -573,13 +571,6 @@ export const adminAPI = {
   },
 
   // Admin CRUD operations for reviews
-  updateReview: async (reviewId, reviewData) => {
-    return await apiCall(`/api/admin/reviews/${reviewId}`, {
-      method: "PUT",
-      body: JSON.stringify(reviewData),
-    });
-  },
-
   deleteReview: async (reviewId) => {
     return await apiCall(`/api/admin/reviews/${reviewId}`, {
       method: "DELETE",
@@ -623,11 +614,9 @@ export const adminAPI = {
   },
 };
 
-/**
- * Utility functions
- */
+
 export const authUtils = {
-  // Check if user is authenticated
+  
   isAuthenticated: () => {
     const token = localStorage.getItem("access_token");
     return !!token;
@@ -680,7 +669,7 @@ export const authUtils = {
     // Also store individual fields for backward compatibility
     localStorage.setItem("user_id", user.id);
     localStorage.setItem("user_email", user.email);
-    localStorage.setItem("user_role", user.is_admin ? "admin" : "user"); // Fixed: use is_admin to set role
+    localStorage.setItem("user_role", user.is_admin ? "admin" : "user");
     localStorage.setItem("user_name", user.full_name || user.email);
     localStorage.setItem("user_is_admin", user.is_admin ? "true" : "false");
 
@@ -711,7 +700,6 @@ export const authUtils = {
     };
   },
 
-  // Clear user info
   clearUserInfo: () => {
     localStorage.removeItem("userInfo");
     localStorage.removeItem("user_id");

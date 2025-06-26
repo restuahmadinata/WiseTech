@@ -51,7 +51,7 @@ const Search = () => {
     const loadPopularGadgets = async () => {
       try {
         setIsLoadingPopular(true);
-        // Get all gadgets using the correct endpoint
+        
         const allGadgets = await gadgetAPI.getAllGadgets(50); // Get up to 50 gadgets
         if (allGadgets && allGadgets.length > 0) {
           setPopularGadgets(allGadgets);

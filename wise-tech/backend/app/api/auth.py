@@ -1,7 +1,7 @@
 """
 Authentication API endpoints.
 """
-
+# file ini digunakan 
 from datetime import timedelta
 from typing import Any
 
@@ -81,7 +81,8 @@ def logout() -> Any:
     """
     return {"msg": "Logout successful"}
 
-
+# Otentikasi
+# Enpoint yang dilindungi untuk mendapatkan informasi pengguna saat ini
 @router.get("/auth/me", response_model=schemas.User)
 def read_users_me(
     current_user: models.User = Depends(deps.get_current_active_user),
@@ -90,3 +91,5 @@ def read_users_me(
     Get current user.
     """
     return current_user
+
+

@@ -40,9 +40,6 @@ def update_user_profile(
     return user
 
 
-
-
-
 @router.get("/users/reviews", response_model=List[schemas.ReviewWithDetails])
 def get_current_user_reviews(
     db: Session = Depends(deps.get_db),

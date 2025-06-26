@@ -2,6 +2,7 @@
 Dependencies for API endpoints.
 """
 
+
 from typing import Generator
 
 from fastapi import Depends, HTTPException, status
@@ -29,7 +30,7 @@ def get_db() -> Generator:
     finally:
         db.close()
 
-
+# Otentikasi pengguna saat ini
 def get_current_user(
     db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
 ) -> models.User:
@@ -55,7 +56,7 @@ def get_current_user(
         )
     return user
 
-
+# Otentikasi pengguna aktif
 def get_current_active_user(
     current_user: models.User = Depends(get_current_user),
 ) -> models.User:
@@ -64,7 +65,7 @@ def get_current_active_user(
     """
     return current_user
 
-
+# Otentikasi pengguna admin
 def get_current_active_admin(
     current_user: models.User = Depends(get_current_active_user),
 ) -> models.User:
