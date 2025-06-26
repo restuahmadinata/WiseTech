@@ -29,8 +29,8 @@ class UserAdminCreate(UserBase):
     email: EmailStr
     username: str
     password: str
-    full_name: str  # Required field
-    bio: Optional[str] = None  # Optional but can be provided
+    full_name: str  
+    bio: Optional[str] = None  
     is_admin: Optional[bool] = False
 
 

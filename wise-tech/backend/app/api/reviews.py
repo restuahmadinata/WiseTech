@@ -40,7 +40,7 @@ def get_all_reviews(
     # Apply filters
     filters = []
     
-    # Search filter (search in review content, title, gadget name, username, and user full_name)
+    # Fitur Search filter Review
     if search:
         search_term = f"%{search}%"
         from app.models.user import User
@@ -57,7 +57,7 @@ def get_all_reviews(
             )
         )
     
-    # Category filter
+    #  Fitur Category filter
     if category and category.lower() != "all":
         filters.append(Gadget.category.ilike(f"%{category}%"))
     
@@ -171,6 +171,8 @@ def read_recent_reviews(
     return result
 
 
+# Otorisasi untuk membuat, memperbarui, dan menghapus review
+# Hanya pengguna yang sudah login yang dapat membuat, memperbarui, atau menghapus review
 @router.post("/reviews", response_model=schemas.Review)
 def create_review(
     *,
@@ -188,15 +190,13 @@ def create_review(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Gadget not found",
         )
-        
-    # Note: Removed duplicate review restriction - users can now submit multiple reviews for the same gadget
     
-    # Create review
+    # Membuat review baru
     review = crud.review.create_user_review(
         db, obj_in=review_in, user_id=current_user.id
     )
     
-    # Add complete user info to review response
+    # Menambahkan informasi pengguna ke dalam review
     review_dict = {
         **review.__dict__,
         "user_name": current_user.username,
@@ -230,8 +230,8 @@ def update_review(
             detail="Review not found",
         )
         
-    # Check if user is owner or admin
-    if review.user_id != current_user.id and not current_user.is_admin:
+    # Mengecek apakah review milik pengguna yang sedang login
+    if review.user_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions",
@@ -273,7 +273,7 @@ def delete_review(
             detail="Review not found",
         )
         
-    # Check if user is owner or admin
+    # Mengecek apakah review milik pengguna yang sedang login atau admin
     if review.user_id != current_user.id and not current_user.is_admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

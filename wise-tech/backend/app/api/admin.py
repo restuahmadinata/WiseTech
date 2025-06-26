@@ -38,7 +38,7 @@ def create_user(
     """
     Create new user (admin only).
     """
-    # Validate required fields
+    # Validasi input
     if not user_in.email or not user_in.email.strip():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -63,7 +63,7 @@ def create_user(
             detail="Full name is required",
         )
     
-    # Check if user with email already exists
+    # Mengecek apakah email sudah ada
     existing_user = crud.user.get_by_email(db, email=user_in.email)
     if existing_user:
         raise HTTPException(
@@ -71,7 +71,7 @@ def create_user(
             detail="User with this email already exists",
         )
     
-    # Check if username already exists
+    # Mengecek apakah username sudah ada
     existing_username = crud.user.get_by_username(db, username=user_in.username)
     if existing_username:
         raise HTTPException(
@@ -101,7 +101,7 @@ def update_user(
             detail="User not found",
         )
     
-    # Don't allow admins to modify their own admin status
+    # Jangan izinkan admin mengubah status admin mereka sendiri
     if user.id == current_user.id and hasattr(user_in, 'is_admin'):
         user_in.is_admin = current_user.is_admin
     
@@ -137,28 +137,6 @@ def delete_user(
     return {"message": "User deleted successfully"}
 
 
-@router.put("/admin/reviews/{id}", response_model=schemas.Review)
-def update_review(
-    *,
-    db: Session = Depends(deps.get_db),
-    id: int,
-    review_in: schemas.ReviewUpdate,
-    current_user: models.User = Depends(deps.get_current_active_admin),
-) -> Any:
-    """
-    Update review (admin only).
-    """
-    review = crud.review.get(db, id=id)
-    if not review:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Review not found",
-        )
-    
-    review = crud.review.update(db, db_obj=review, obj_in=review_in)
-    return review
-
-
 @router.delete("/admin/reviews/{id}")
 def delete_review(
     *,
@@ -189,24 +167,19 @@ def get_dashboard_stats(
     """
     Get dashboard statistics (admin only).
     """
-    # Count total users
+    # Menghitung total pengguna
     total_users = db.query(func.count(models.User.id)).scalar() or 0
     
-    # Count total gadgets
+    # Menghitung total gadget
     total_gadgets = db.query(func.count(models.Gadget.id)).scalar() or 0
     
-    # Count total reviews
+    # Menghitung total review
     total_reviews = db.query(func.count(models.Review.id)).scalar() or 0
-    
-    # Count pending reviews (assuming we'll add status field later)
-    # For now, we'll assume all reviews are pending if they don't have a status
-    pending_reviews = 0  # Placeholder for future implementation
     
     return {
         "totalUsers": total_users,
         "totalGadgets": total_gadgets,
         "totalReviews": total_reviews,
-        "pendingReviews": pending_reviews,
     }
 
 

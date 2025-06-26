@@ -55,7 +55,7 @@ def get_db():
 def health_check():
     return {"status": "API is running", "version": "1.0.0"}
 
-# Tambahkan semua router API
+# Semua router API
 app.include_router(auth.router, prefix="/api", tags=["authentication"])
 app.include_router(users.router, prefix="/api", tags=["users"])
 app.include_router(gadgets.router, prefix="/api", tags=["gadgets"])
